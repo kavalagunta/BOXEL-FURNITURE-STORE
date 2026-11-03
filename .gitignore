@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# builds
+client/dist/
+
+# secrets — never commit real credentials
+.env
+.env.*
+!.env.example
+
+# uploaded files (keep the folder)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

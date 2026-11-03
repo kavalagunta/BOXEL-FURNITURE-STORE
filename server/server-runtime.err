@@ -1,0 +1,19 @@
+[smtp] Not configured (SMTP_HOST / SMTP_FROM_EMAIL empty). Emails will be logged as "skipped".
+[error] GET /api/admin/orders: TypeError [ERR_INVALID_ARG_TYPE]: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received undefined
+    at Hash.update (node:internal/crypto/hash:153:11)
+    at getPartitionKey (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/server/node_modules/express-rate-limit/dist/index.mjs:211:8)
+    at setDraft8Headers (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/server/node_modules/express-rate-limit/dist/index.mjs:251:24)
+    at file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/server/node_modules/express-rate-limit/dist/index.mjs:953:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/server/node_modules/express-rate-limit/dist/index.mjs:836:5 {
+  code: 'ERR_INVALID_ARG_TYPE'
+}
+[error] GET /api/faqs: TypeError [ERR_INVALID_ARG_TYPE]: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received undefined
+    at Hash.update (node:internal/crypto/hash:153:11)
+    at getPartitionKey (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/server/node_modules/express-rate-limit/dist/index.mjs:211:8)
+    at setDraft8Headers (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/server/node_modules/express-rate-limit/dist/index.mjs:251:24)
+    at file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/server/node_modules/express-rate-limit/dist/index.mjs:953:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/server/node_modules/express-rate-limit/dist/index.mjs:836:5 {
+  code: 'ERR_INVALID_ARG_TYPE'
+}

@@ -1,0 +1,21 @@
+{
+  "name": "boxel-store",
+  "private": true,
+  "version": "1.0.0",
+  "description": "boxel e-commerce store — React (Vite) client + Express/MySQL API",
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "seed": "npm run seed --prefix server",
+    "dev": "node -e \"const { spawn } = require('child_process'); spawn('npm', ['run', 'dev', '--prefix', 'server'], { stdio: 'inherit', shell: true }); spawn('npm', ['run', 'dev', '--prefix', 'client'], { stdio: 'inherit', shell: true });\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "test": "npm test --prefix server",
+    "create-admin": "npm run create-admin --prefix server",
+    "lint": "npm run lint --prefix client"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

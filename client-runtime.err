@@ -1,0 +1,59 @@
+Port 5173 is in use on a wildcard address, but localhost:5173 is available. There may be another server running on a wildcard IP on port 5173.
+12:03:39 am [vite] Internal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `}` but found `&&`
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/ProductCard.jsx:89:19 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m89 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m{[38;5;249mc[0m[38;5;249ma[0m[38;5;249mn[0m[38;5;249mB[0m[38;5;249mu[0m[38;5;249my[0m[38;5;249m [0m&&[38;5;249m [0m[38;5;249m![0m[38;5;249mm[0m[38;5;249mu[0m[38;5;249ml[0m[38;5;249mt[0m[38;5;249mi[0m[38;5;249mp[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249mV[0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249mi[0m[38;5;249ma[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249ms[0m[38;5;249m [0m[38;5;249m?[0m[38;5;249m [0m[38;5;249m([0m
+ [38;5;240m   │[0m           ┬       ─┬  
+ [38;5;240m   │[0m           ╰─────────── Opened here
+ [38;5;240m   │[0m                    │  
+ [38;5;240m   │[0m                    ╰── `,` or `}` expected
+[38;5;246m────╯[0m
+
+  Plugin: vite:oxc
+  File: C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/src/components/ProductCard.jsx
+      at transformWithOxc (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:7581:19)
+      at TransformPluginContext.transform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:7653:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:8545:51)
+      at async loadAndTransform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:20184:26)
+12:03:39 am [vite] Internal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `}` but found `&&`
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/ProductCard.jsx:89:19 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m89 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m{[38;5;249mc[0m[38;5;249ma[0m[38;5;249mn[0m[38;5;249mB[0m[38;5;249mu[0m[38;5;249my[0m[38;5;249m [0m&&[38;5;249m [0m[38;5;249m![0m[38;5;249mm[0m[38;5;249mu[0m[38;5;249ml[0m[38;5;249mt[0m[38;5;249mi[0m[38;5;249mp[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249mV[0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249mi[0m[38;5;249ma[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249ms[0m[38;5;249m [0m[38;5;249m?[0m[38;5;249m [0m[38;5;249m([0m
+ [38;5;240m   │[0m           ┬       ─┬  
+ [38;5;240m   │[0m           ╰─────────── Opened here
+ [38;5;240m   │[0m                    │  
+ [38;5;240m   │[0m                    ╰── `,` or `}` expected
+[38;5;246m────╯[0m
+
+  Plugin: vite:oxc
+  File: C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/src/components/ProductCard.jsx
+      at transformWithOxc (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:7581:19)
+      at TransformPluginContext.transform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:7653:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:8545:51)
+      at async loadAndTransform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:20184:26)
+12:03:39 am [vite] (client) [console.error] [vite] Failed to reload /src/components/ProductCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+12:03:39 am [vite] (client) [console.error] [vite] Failed to reload /src/components/ProductCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+12:03:39 am [vite] Internal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `}` but found `&&`
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/ProductCard.jsx:89:19 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m89 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m{[38;5;249mc[0m[38;5;249ma[0m[38;5;249mn[0m[38;5;249mB[0m[38;5;249mu[0m[38;5;249my[0m[38;5;249m [0m&&[38;5;249m [0m[38;5;249m![0m[38;5;249mm[0m[38;5;249mu[0m[38;5;249ml[0m[38;5;249mt[0m[38;5;249mi[0m[38;5;249mp[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249mV[0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249mi[0m[38;5;249ma[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249ms[0m[38;5;249m [0m[38;5;249m?[0m[38;5;249m [0m[38;5;249m([0m
+ [38;5;240m   │[0m           ┬       ─┬  
+ [38;5;240m   │[0m           ╰─────────── Opened here
+ [38;5;240m   │[0m                    │  
+ [38;5;240m   │[0m                    ╰── `,` or `}` expected
+[38;5;246m────╯[0m
+
+  Plugin: vite:oxc
+  File: C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/src/components/ProductCard.jsx
+      at transformWithOxc (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:7581:19)
+      at TransformPluginContext.transform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:7653:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:8545:51)
+      at async loadAndTransform (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///C:/Users/chara/Downloads/furniture-boxel/furniture-boxel/client/node_modules/vite/dist/node/chunks/node.js:20404:20)
+12:03:39 am [vite] (client) [console.error] [vite] Failed to reload /src/components/ProductCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)

@@ -1,0 +1,43 @@
+{
+  "name": "boxel-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node scripts/seed-shop.js",
+    "create-admin": "node scripts/create-admin.js",
+    "test:db": "node scripts/setup-test-db.js",
+    "migrate:cloudinary-schema": "node scripts/migrate-cloudinary-schema.js",
+    "migrate:cloudinary-media": "node scripts/migrate-cloudinary-media.js",
+    "migrate:order-workflow": "node scripts/migrate-order-workflow.js",
+    "migrate:app-schema": "node scripts/reconcile-app-schema.js",
+    "test": "node scripts/setup-test-db.js && node --test --test-concurrency=1 \"tests/**/*.test.js\""
+  },
+  "description": "boxel store API (Express + MySQL)",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.11.0",
+    "compression": "^1.8.2",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "express-mysql-session": "^3.0.3",
+    "express-rate-limit": "^8.7.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
+    "multer": "^2.4.0",
+    "mysql2": "^3.24.6",
+    "nodemailer": "^10.1.1",
+    "sharp": "^0.35.5",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}
