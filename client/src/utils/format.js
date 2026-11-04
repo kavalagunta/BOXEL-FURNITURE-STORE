@@ -25,8 +25,8 @@ export const whatsappHref = (p, text) => {
 };
 
 export const ORDER_STATUS = {
-  placed: 'Placed',
-  pending: 'Placed',
+  placed: 'Legacy placed',
+  pending: 'Pending',
   accepted: 'Accepted',
   confirmed: 'Accepted',
   processing: 'In production',

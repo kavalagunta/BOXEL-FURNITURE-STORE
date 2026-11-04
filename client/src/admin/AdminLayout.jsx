@@ -2,16 +2,47 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Activity, Bell, Box, ExternalLink, FolderTree, HelpCircle, Image, LayoutDashboard, LogOut, Mail, MapPin, Menu, MessageSquare,
+  Activity, Bell, Box, Check, ExternalLink, FolderTree, HelpCircle, Image, LayoutDashboard, LogOut, Mail, MapPin, Menu, MessageSquare,
   Search, Settings, Share2, ShoppingCart, Star, Truck, Users as UsersIcon, UserCog,
+  Volume2, VolumeX,
 } from 'lucide-react';
 import Logo from '../components/ui/Logo.jsx';
 import { Drawer } from '../components/ui/Overlay.jsx';
 import { useAdmin, can } from './AdminAuth.jsx';
-import { get } from '../services/api.js';
+import { get, post } from '../services/api.js';
 import { useDebounced } from '../hooks/useApi.js';
 import { formatINR } from '../utils/format.js';
 import { titleCase } from './components/ui.jsx';
+import { useToast } from '../context/ToastContext.jsx';
+
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
+function relativeTime(value) {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
+  const [amount, unit] = seconds < 60 ? [seconds, 'second'] : seconds < 3600 ? [Math.floor(seconds / 60), 'minute'] : seconds < 86400 ? [Math.floor(seconds / 3600), 'hour'] : [Math.floor(seconds / 86400), 'day'];
+  return new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(-amount, unit);
+}
+
+function playOrderAlert() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const context = new AudioContextClass();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 880;
+    gain.gain.setValueAtTime(0.08, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.22);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.22);
+    oscillator.onended = () => context.close();
+  } catch {
+    // Browsers may block audio until the admin interacts with the page.
+  }
+}
 
 const NAV = [
   { group: 'Overview', items: [{ to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, area: 'dashboard' }] },
@@ -79,6 +110,12 @@ function Sidebar({ counts }) {
                     >
                       <Icon className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
                       <span className="flex-1">{label}</span>
+                      {badge === 'orders' && counts.orders > 0 && (
+                        <span className="relative mr-1 inline-flex size-2.5" aria-hidden="true">
+                          <span className="absolute inline-flex size-full animate-ping rounded-full bg-orange-400 opacity-60" />
+                          <span className="relative inline-flex size-2.5 rounded-full bg-orange-500" />
+                        </span>
+                      )}
                       {badge && counts[badge] > 0 && (
                         <span className="rounded-full bg-signal px-1.5 text-[0.6875rem] font-semibold leading-[1.125rem] text-ink">
                           {counts[badge]}
@@ -191,7 +228,7 @@ function Dropdown({ button, children, label }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.18 }}
-            className="absolute right-0 top-full z-30 mt-2 w-72 rounded-md border border-hairline bg-white p-2 shadow-[var(--shadow-float)]"
+            className="absolute right-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-1rem)] rounded-md border border-hairline bg-white p-2 shadow-[var(--shadow-float)]"
           >
             {children}
           </motion.div>
@@ -204,16 +241,130 @@ function Dropdown({ button, children, label }) {
 export default function AdminLayout({ children }) {
   const { admin, logout } = useAdmin();
   const [mobileNav, setMobileNav] = useState(false);
-  const [notes, setNotes] = useState({ items: [], total: 0 });
+  const [notes, setNotes] = useState({ items: [], total: 0, unreadOrderCount: 0, orders: [] });
+  const [soundMuted, setSoundMuted] = useState(() => {
+    try { return localStorage.getItem('boxel.adminOrderSoundMuted') === 'true'; } catch { return false; }
+  });
+  const knownOrderNotifications = useRef(new Set());
+  const initialNotificationLoad = useRef(false);
+  const soundMutedRef = useRef(soundMuted);
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const toast = useToast();
+  const pathnameRef = useRef(pathname);
+  useEffect(() => { pathnameRef.current = pathname; }, [pathname]);
+
+  useEffect(() => { soundMutedRef.current = soundMuted; }, [soundMuted]);
+  useEffect(() => { setMobileNav(false); }, [pathname]);
 
   useEffect(() => {
-    setMobileNav(false);
-    get('/admin/notifications').then(setNotes).catch(() => {});
+    let active = true;
+    let source;
+    const announceOrder = (order) => {
+      const id = String(order.notificationId);
+      if (knownOrderNotifications.current.has(id)) return;
+      knownOrderNotifications.current.add(id);
+      toast.success(`New order #${order.orderNumber} received.`, {
+        action: { label: 'View order', onClick: () => navigate(`/admin/orders/${order.orderId}`) },
+        duration: 8000,
+      });
+      if (!soundMutedRef.current) playOrderAlert();
+      window.dispatchEvent(new CustomEvent('admin:new-order', { detail: order }));
+    };
+    const acceptSnapshot = (next) => {
+      const orders = Array.isArray(next.orders) ? next.orders : [];
+      const orderCount = Number(next.unreadOrderCount ?? next.items?.find((item) => item.key === 'orders')?.count ?? 0);
+      const normalized = { ...next, orders, unreadOrderCount: orderCount, pendingOrderCount: Number(next.pendingOrderCount || 0) };
+      if (!initialNotificationLoad.current) {
+        orders.forEach((order) => knownOrderNotifications.current.add(String(order.notificationId)));
+        initialNotificationLoad.current = true;
+      } else {
+        [...orders].reverse().forEach((order) => {
+          if (!order.readAt) announceOrder(order);
+          else knownOrderNotifications.current.add(String(order.notificationId));
+        });
+      }
+      setNotes(normalized);
+    };
+    const refreshNotifications = async () => {
+      try {
+        const next = await get('/admin/notifications');
+        if (!active) return;
+        acceptSnapshot(next);
+      } catch {
+        // Keep the last known notification state when the admin API is briefly unavailable.
+      }
+    };
+    let timer;
+    const startLiveFeed = async () => {
+      await refreshNotifications();
+      if (!active) return;
+      source = new EventSource(`${API_BASE}/api/admin/events/orders`, { withCredentials: true });
+      source.addEventListener('new-order', (event) => {
+        try {
+          const order = JSON.parse(event.data);
+          announceOrder(order);
+          refreshNotifications();
+          if (pathnameRef.current.startsWith('/admin/orders')) {
+            post('/admin/notifications/orders/read', {}).then(refreshNotifications).catch(() => {});
+          }
+        } catch {
+          // Ignore malformed events; the persisted snapshot below will recover them.
+        }
+      });
+      source.onopen = refreshNotifications;
+      timer = window.setInterval(() => {
+        if (!document.hidden) refreshNotifications();
+      }, 30000);
+    };
+    startLiveFeed();
+    const onFocus = () => refreshNotifications();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      active = false;
+      source?.close();
+      window.clearInterval(timer);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [navigate, toast]);
+
+  useEffect(() => {
+    if (!pathname.startsWith('/admin/orders')) return;
+    post('/admin/notifications/orders/read', {}).then(() => {
+      setNotes((current) => ({
+        ...current,
+        unreadOrderCount: 0,
+        items: current.items.filter((item) => item.key !== 'orders'),
+        total: current.items.filter((item) => item.key !== 'orders').reduce((sum, item) => sum + item.count, 0),
+        orders: current.orders.map((order) => ({ ...order, readAt: order.readAt || new Date().toISOString() })),
+      }));
+    }).catch(() => {});
   }, [pathname]);
 
+  useEffect(() => {
+    const title = document.title.replace(/^\(\d+\)\s*/, '') || 'Admin';
+    document.title = notes.unreadOrderCount > 0 ? `(${notes.unreadOrderCount}) ${title}` : title;
+  }, [notes.unreadOrderCount, pathname]);
+
   const counts = Object.fromEntries(notes.items.map((i) => [i.key, i.count]));
+  const markAllOrdersRead = async () => {
+    await post('/admin/notifications/orders/read', {});
+    setNotes((current) => {
+      const items = current.items.filter((item) => item.key !== 'orders');
+      return {
+        ...current,
+        items,
+        total: items.reduce((sum, item) => sum + item.count, 0),
+        unreadOrderCount: 0,
+        orders: current.orders.map((order) => ({ ...order, readAt: order.readAt || new Date().toISOString() })),
+      };
+    });
+  };
+  const toggleSound = () => setSoundMuted((muted) => {
+    const next = !muted;
+    try { localStorage.setItem('boxel.adminOrderSoundMuted', String(next)); } catch { /* Storage may be disabled. */ }
+    return next;
+  });
   const signOut = async () => {
     await logout();
     navigate('/admin/login', { replace: true });
@@ -241,24 +392,57 @@ export default function AdminLayout({ children }) {
               <ExternalLink className="size-4" aria-hidden /> View site
             </a>
             <Dropdown
-              label={`Notifications${notes.total ? `, ${notes.total} need attention` : ''}`}
+              label={`Notifications${notes.unreadOrderCount ? `, ${notes.unreadOrderCount} unread orders` : notes.total ? `, ${notes.total} need attention` : ''}`}
               button={
                 <>
                   <Bell className="size-5" />
-                  {notes.total > 0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-signal" aria-hidden />}
+                  {notes.unreadOrderCount > 0 && (
+                    <span className="absolute right-1 top-1 inline-flex size-2.5" aria-hidden="true">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-orange-400 opacity-60" />
+                      <span className="relative inline-flex size-2.5 rounded-full bg-orange-500" />
+                    </span>
+                  )}
+                  {notes.unreadOrderCount === 0 && notes.total > 0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-signal" aria-hidden="true" />}
                 </>
               }
             >
-              {notes.items.length === 0 ? (
-                <p className="p-3 text-sm text-graphite">You are all caught up.</p>
+              <div className="flex items-center justify-between gap-3 border-b border-hairline px-2 pb-2">
+                <p className="text-sm font-semibold">Recent orders</p>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={toggleSound} className="rounded p-1.5 text-graphite hover:bg-stone hover:text-ink" aria-label={soundMuted ? 'Unmute order sound' : 'Mute order sound'} title={soundMuted ? 'Unmute order sound' : 'Mute order sound'}>
+                    {soundMuted ? <VolumeX className="size-4" aria-hidden /> : <Volume2 className="size-4" aria-hidden />}
+                  </button>
+                  <button type="button" onClick={() => markAllOrdersRead().catch(() => {})} disabled={!notes.unreadOrderCount} className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-graphite hover:bg-stone disabled:cursor-default disabled:opacity-50">
+                    <Check className="size-3.5" aria-hidden /> Mark all read
+                  </button>
+                </div>
+              </div>
+              {notes.orders.length === 0 ? (
+                <p className="px-3 py-4 text-sm text-graphite">No recent orders.</p>
               ) : (
-                <ul>
-                  {notes.items.map((n) => (
-                    <li key={n.key}>
-                      <Link to={n.link} className="flex items-center justify-between gap-3 rounded px-3 py-2.5 text-sm hover:bg-stone">
-                        <span>
-                          <strong className="font-semibold">{n.count}</strong> {n.label}
+                <ul className="max-h-80 overflow-y-auto py-1">
+                  {notes.orders.map((order) => (
+                    <li key={order.notificationId}>
+                      <Link to={`/admin/orders/${order.orderId}`} className="flex items-start gap-2 rounded px-2 py-2.5 text-sm hover:bg-stone">
+                        {!order.readAt && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-orange-500" aria-label="Unread" />}
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center justify-between gap-2">
+                            <strong className="truncate font-semibold">Order #{order.orderNumber}</strong>
+                            <span className="shrink-0 text-xs text-graphite">{relativeTime(order.createdAt)}</span>
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs text-graphite">{order.customerName} · {formatINR(order.total)}</span>
                         </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {notes.items.some((item) => item.key !== 'orders') && (
+                <ul className="border-t border-hairline pt-1">
+                  {notes.items.filter((item) => item.key !== 'orders').map((item) => (
+                    <li key={item.key}>
+                      <Link to={item.link} className="block rounded px-2 py-2 text-xs text-graphite hover:bg-stone">
+                        <strong className="font-semibold text-ink">{item.count}</strong> {item.label}
                       </Link>
                     </li>
                   ))}

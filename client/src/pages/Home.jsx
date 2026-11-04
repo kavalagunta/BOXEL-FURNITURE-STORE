@@ -9,7 +9,7 @@ import { useApi } from '../hooks/useApi.js';
 export default function Home() {
   const { hero, s } = useSite();
   const categories = useApi('/categories');
-  const featured = useApi('/products?featured=1&limit=4');
+  const featured = useApi('/products?availability=available&sort=featured&limit=4');
   const faqs = useApi('/faqs');
   const origin = window.location.origin;
 

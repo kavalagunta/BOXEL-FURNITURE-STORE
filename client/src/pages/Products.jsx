@@ -137,11 +137,11 @@ export default function Products() {
           )}
         </p>
 
-        <div className="mt-8">
+        <div className="products-listing mt-8 max-sm:-mx-3">
           {list.error && <ErrorState error={list.error} onRetry={list.reload} />}
           {list.loading && !list.data && (
-            <div className="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-              {[0, 1, 2].map((i) => <ProductCardSkeleton key={i} />)}
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,330px))] items-stretch justify-center gap-3 max-sm:grid-cols-2 max-sm:gap-1.5 min-[1280px]:gap-5">
+              {[0, 1, 2].map((i) => <ProductCardSkeleton key={i} compact />)}
             </div>
           )}
           {list.data && items.length === 0 && (
@@ -174,9 +174,9 @@ export default function Products() {
             </div>
           )}
           {items.length > 0 && (
-            <motion.div key={params.toString()} className={`grid gap-x-6 gap-y-14 sm:grid-cols-2 ${items.length > 1 ? 'lg:grid-cols-3' : ''}`} variants={stagger} initial="hidden" animate="show">
+            <motion.div key={params.toString()} className="grid grid-cols-[repeat(auto-fit,minmax(190px,330px))] items-stretch justify-center gap-3 max-sm:grid-cols-2 max-sm:gap-1.5 min-[1280px]:gap-5" variants={stagger} initial="hidden" animate="show">
               {items.map((p, i) => (
-                <ProductCard key={p.id} product={p} priority={i < 3} />
+                <ProductCard key={p.id} product={p} priority={i < 3} compact />
               ))}
             </motion.div>
           )}

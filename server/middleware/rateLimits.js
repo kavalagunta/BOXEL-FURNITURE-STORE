@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { env } from '../config/env.js';
 
 function limiter({ windowMinutes, limit, message }) {
@@ -7,6 +7,9 @@ function limiter({ windowMinutes, limit, message }) {
     limit,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
+    // Some local proxy / IDE requests do not populate req.ip. Keep the limiter
+    // functional and keyed per connection in that case instead of throwing.
+    keyGenerator: (req) => ipKeyGenerator(req.ip || req.socket?.remoteAddress || req.connection?.remoteAddress || '127.0.0.1'),
     skip: () => env.isTest,
     handler: (_req, res) => res.status(429).json({ error: message }),
   });

@@ -96,20 +96,42 @@ export async function stats(_req, res) {
 }
 
 /** Lightweight counts for the admin header's notification bell. */
-export async function notifications(_req, res) {
-  const [orders, enquiries, reviews, emails] = await Promise.all([
+export async function notifications(req, res) {
+  const [unreadOrders, pendingOrders, recentOrders, enquiries, reviews, emails] = await Promise.all([
+    queryOne('SELECT COUNT(*) AS n FROM admin_order_notifications WHERE admin_id = ? AND read_at IS NULL', [req.admin.id]),
     queryOne("SELECT COUNT(*) AS n FROM orders WHERE status = 'pending'"),
+    query(
+      `SELECT n.id AS notificationId, o.id AS orderId, o.order_number AS orderNumber,
+              o.customer_name AS customerName, o.total, o.created_at AS createdAt, n.read_at AS readAt
+         FROM admin_order_notifications n JOIN orders o ON o.id = n.order_id
+        WHERE n.admin_id = ? ORDER BY n.id DESC LIMIT 20`,
+      [req.admin.id],
+    ),
     queryOne("SELECT COUNT(*) AS n FROM enquiries WHERE status = 'new'"),
     queryOne("SELECT COUNT(*) AS n FROM reviews WHERE status = 'pending'"),
     queryOne("SELECT COUNT(*) AS n FROM email_notification_logs WHERE status = 'failed'"),
   ]);
   const items = [
-    { key: 'orders', count: Number(orders.n), label: 'orders awaiting confirmation', link: '/admin/orders?status=pending' },
+    { key: 'orders', count: Number(unreadOrders.n), label: 'unread new orders', link: '/admin/orders?status=pending' },
     { key: 'enquiries', count: Number(enquiries.n), label: 'new enquiries', link: '/admin/enquiries?status=new' },
     { key: 'reviews', count: Number(reviews.n), label: 'reviews to moderate', link: '/admin/reviews?status=pending' },
     { key: 'emails', count: Number(emails.n), label: 'failed emails', link: '/admin/email-settings' },
   ].filter((i) => i.count > 0);
-  res.json({ items, total: items.reduce((s, i) => s + i.count, 0) });
+  res.json({
+    items,
+    total: items.reduce((s, i) => s + i.count, 0),
+    unreadOrderCount: Number(unreadOrders.n),
+    pendingOrderCount: Number(pendingOrders.n),
+    orders: recentOrders,
+  });
+}
+
+export async function markOrderNotificationsRead(req, res) {
+  await query(
+    'UPDATE admin_order_notifications SET read_at = UTC_TIMESTAMP() WHERE admin_id = ? AND read_at IS NULL',
+    [req.admin.id],
+  );
+  res.json({ ok: true });
 }
 
 /** Global admin search across orders, customers and products. */

@@ -33,7 +33,7 @@ async function runMigration() {
   await conn.query(`
     ALTER TABLE orders 
     MODIFY COLUMN status ENUM('placed', 'pending', 'accepted', 'confirmed', 'processing', 'shipped', 'delivered', 'rejected', 'cancelled') 
-    NOT NULL DEFAULT 'placed'
+    NOT NULL DEFAULT 'pending'
   `);
 
   // Add columns to orders if not existing

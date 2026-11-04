@@ -11,6 +11,7 @@
     "migrate:cloudinary-schema": "node scripts/migrate-cloudinary-schema.js",
     "migrate:cloudinary-media": "node scripts/migrate-cloudinary-media.js",
     "migrate:order-workflow": "node scripts/migrate-order-workflow.js",
+    "migrate:admin-order-notifications": "node scripts/migrate-admin-order-notifications.js",
     "migrate:app-schema": "node scripts/reconcile-app-schema.js",
     "test": "node scripts/setup-test-db.js && node --test --test-concurrency=1 \"tests/**/*.test.js\""
   },

@@ -5,8 +5,8 @@ const C = { ink: '#171717', muted: '#707070', line: '#E8E8E5', stone: '#F7F7F5',
 const PAYMENT_LABELS = { cod: 'Cash on delivery', bank_transfer: 'Pay on confirmation', online: 'Online payment' };
 const PAYMENT_STATUS = { pending: 'Awaiting payment', paid: 'Paid', failed: 'Failed', refunded: 'Refunded', cancelled: 'Cancelled' };
 const ORDER_STATUS = {
-  placed: 'Placed',
-  pending: 'Placed',
+  placed: 'Legacy placed',
+  pending: 'Pending',
   accepted: 'Accepted',
   confirmed: 'Accepted',
   processing: 'In production',

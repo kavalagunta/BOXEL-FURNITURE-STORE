@@ -296,23 +296,24 @@ function Spotlight({ product }) {
 }
 
 export function Featured({ data, loading, error, reload }) {
-  const items = data?.items || [];
+  const items = (data?.items || []).slice(0, 4);
   return (
     <section className="home-featured pb-20 sm:pb-28 lg:pb-32" aria-labelledby="featured-title">
-      <div className="shell">
-        <Reveal className="home-featured__header flex flex-wrap items-end justify-between gap-6">
+      <div className="shell max-sm:px-1">
+        <Reveal className="home-featured__header flex flex-wrap items-end justify-between gap-4">
           <h2 id="featured-title" className="home-featured__title text-headline font-light">
             All products
+            <span aria-hidden className="mt-2 block h-0.5 w-11 rounded-full bg-signal" />
           </h2>
-          <Link to="/products" className="home-featured__all-link link text-[0.9375rem] font-medium">
+          <Link to="/products" className="home-featured__all-link text-sm font-medium underline decoration-neutral-300 underline-offset-4 transition-colors hover:text-signal focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal motion-reduce:transition-none">
             Shop the collection <ArrowUpRight className="size-4" aria-hidden />
           </Link>
         </Reveal>
         <div className="home-featured__content">
           {error && <ErrorState error={error} onRetry={reload} />}
           {loading && !data && (
-            <div className="home-featured__grid">
-              {[0, 1, 2].map((i) => (
+            <div className="home-featured__grid grid grid-cols-2 justify-center gap-3 min-[640px]:grid-cols-3 min-[1024px]:grid-cols-4 max-sm:gap-1.5 min-[1280px]:gap-5">
+              {[0, 1, 2, 3].map((i) => (
                 <ProductCardSkeleton key={i} compact />
               ))}
             </div>
@@ -320,7 +321,7 @@ export function Featured({ data, loading, error, reload }) {
           {data && items.length === 0 && <p className="home-featured__empty">New products are being prepared. Check back soon.</p>}
           {items.length > 0 && (
             <motion.div
-              className="home-featured__grid"
+              className="home-featured__grid grid grid-cols-2 justify-center gap-3 min-[640px]:grid-cols-3 min-[1024px]:grid-cols-4 max-sm:gap-1.5 min-[1280px]:gap-5"
               variants={stagger}
               initial="hidden"
               whileInView="show"

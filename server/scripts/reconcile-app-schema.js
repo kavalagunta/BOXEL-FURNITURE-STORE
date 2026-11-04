@@ -50,7 +50,7 @@ try {
   const schemaFile = path.join(SERVER_ROOT, '..', 'database', 'schema.sql');
   await conn.query(await fs.readFile(schemaFile, 'utf8'));
 
-  await conn.query("ALTER TABLE orders MODIFY COLUMN status ENUM('placed','pending','accepted','confirmed','processing','shipped','delivered','rejected','cancelled') NOT NULL DEFAULT 'placed'");
+  await conn.query("ALTER TABLE orders MODIFY COLUMN status ENUM('placed','pending','accepted','confirmed','processing','shipped','delivered','rejected','cancelled') NOT NULL DEFAULT 'pending'");
   await addColumn('orders', 'accepted_at', 'DATETIME NULL');
   await addColumn('orders', 'accepted_by', 'INT UNSIGNED NULL');
   await addColumn('orders', 'rejected_at', 'DATETIME NULL');

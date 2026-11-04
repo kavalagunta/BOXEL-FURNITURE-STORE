@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useCart } from '../../context/CartContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { useApi } from '../../hooks/useApi.js';
+import { useOrderStatusEvents } from '../../hooks/useOrderStatusEvents.js';
 import { del, post } from '../../services/api.js';
 import { formatDate, formatINR, ORDER_STATUS } from '../../utils/format.js';
 import { INDIAN_STATES, passwordProblem } from '../../utils/validation.js';
@@ -281,6 +282,7 @@ export function AccountOrders() {
 export function AccountOrderDetail() {
   const { orderNumber } = useParams();
   const { data, error, loading, reload } = useApi(`/account/orders/${encodeURIComponent(orderNumber)}`);
+  useOrderStatusEvents(orderNumber, data?.order?.status, reload, Boolean(data?.order));
   useEffect(() => window.scrollTo(0, 0), []);
   if (error) return error.status === 404 ? <p className="text-graphite">We could not find this order in your account.</p> : <ErrorState error={error} onRetry={reload} />;
   if (loading || !data) return <PageLoader />;

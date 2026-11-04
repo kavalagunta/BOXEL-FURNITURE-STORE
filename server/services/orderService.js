@@ -49,7 +49,7 @@ const insertOrderSql = `INSERT INTO orders (order_number, idempotency_key, custo
   ship_line1, ship_line2, ship_city, ship_state, ship_pincode, ship_country, delivery_instructions, order_notes,
   subtotal, shipping_fee, tax_amount, tax_label, tax_inclusive, discount_amount, total, currency, status,
   payment_method, payment_status, ip_address)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'INR', 'placed', ?, 'pending', ?)`;
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'INR', 'pending', ?, 'pending', ?)`;
 
 /**
  * Creates an order atomically:
@@ -119,6 +119,11 @@ export async function createOrder({ data, customerId, ip }) {
       await conn.query(
         `INSERT INTO order_items (order_id, product_id, variant_id, product_name, product_slug, sku, variant_name, color_hex, image_url, unit_price, quantity, line_total) VALUES ?`,
         [itemRows],
+      );
+      await conn.query(
+        `INSERT IGNORE INTO admin_order_notifications (admin_id, order_id)
+         SELECT id, ? FROM admins WHERE is_active = 1`,
+        [orderId],
       );
       await conn.query('INSERT INTO payments (order_id, method, amount, status) VALUES (?, ?, ?, ?)', [orderId, data.paymentMethod, toRupees(p.total), 'pending']);
       await conn.query(

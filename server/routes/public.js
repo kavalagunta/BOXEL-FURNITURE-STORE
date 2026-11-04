@@ -9,6 +9,7 @@ import * as orders from '../controllers/orderController.js';
 import * as auth from '../controllers/authController.js';
 import * as account from '../controllers/accountController.js';
 import * as contact from '../controllers/contactController.js';
+import { openCustomerOrderEventStream } from '../services/adminOrderEvents.js';
 
 const r = Router();
 
@@ -26,6 +27,7 @@ r.put('/cart', requireCustomer, validate(cart.cartItemsSchema), cart.saveCart);
 
 r.post('/orders', L.checkoutLimiter, requireCustomer, validate(orders.checkoutSchema), orders.placeOrder);
 r.get('/orders/confirmation/:orderNumber', orders.confirmation);
+r.get('/orders/:orderNumber/events', openCustomerOrderEventStream);
 
 r.post('/enquiries', L.contactLimiter, validate(contact.enquirySchema), contact.createEnquiry);
 r.post('/newsletter', L.newsletterLimiter, validate(contact.newsletterSchema), contact.subscribe);

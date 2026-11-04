@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createOrder, getOrderDetail } from '../services/orderService.js';
 import { notifyOrderPlaced } from '../services/notificationService.js';
+import { broadcastNewOrder } from '../services/adminOrderEvents.js';
 import { email, indianMobile, pincode, text, optionalText, boolish } from '../utils/validators.js';
 import { clientIp } from '../utils/helpers.js';
 import { notFound } from '../utils/httpError.js';
@@ -38,7 +39,15 @@ export async function placeOrder(req, res) {
   req.session.recentOrders = [...recent].slice(-10);
 
   // Emails go out after the transaction has committed; a mail failure never fails the order.
-  if (!result.duplicate) setImmediate(() => notifyOrderPlaced(result.orderId));
+  if (!result.duplicate) {
+    try {
+      await broadcastNewOrder(result.orderId);
+    } catch (err) {
+      // Notifications are persisted in the order transaction; connected admins recover from the feed.
+      console.error(`[admin-order-events] could not broadcast order ${result.orderId}:`, err.message);
+    }
+    setImmediate(() => notifyOrderPlaced(result.orderId));
+  }
 
   res.status(result.duplicate ? 200 : 201).json({ orderNumber: result.orderNumber, duplicate: result.duplicate });
 }

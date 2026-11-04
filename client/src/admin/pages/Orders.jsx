@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { Printer, RotateCw } from 'lucide-react';
 import { PageHeader, Card, Table, Pagination, SearchInput, Select, StatusBadge, Toolbar, ConfirmDialog, Badge } from '../components/ui.jsx';
@@ -28,6 +28,20 @@ export function OrdersList() {
   const query = qs({ q: params.get('q'), status: params.get('status'), payment: params.get('payment'), from: params.get('from'), to: params.get('to'), page: params.get('page') });
   const { data, loading, error, reload } = useApi(`/admin/orders${query}`);
 
+  useEffect(() => {
+    const refresh = () => reload();
+    const timer = window.setInterval(() => {
+      if (!document.hidden) refresh();
+    }, 10000);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('admin:new-order', refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('admin:new-order', refresh);
+    };
+  }, [reload]);
+
   return (
     <>
       <PageHeader title="Orders" description="Search by order number, customer name, email or phone." />
@@ -56,7 +70,7 @@ export function OrdersList() {
             { key: 'created_at', label: 'Placed', render: (o) => formatDateTime(o.created_at) },
             { key: 'customer', label: 'Customer', render: (o) => <span><span className="block">{o.customer_name}</span><span className="text-[0.75rem] text-graphite">{formatPhone(o.customer_phone)}</span></span> },
             { key: 'items', label: 'Items', render: (o) => o.item_count },
-            { key: 'status', label: 'Status', render: (o) => <StatusBadge status={o.status} label={ORDER_STATUS[o.status]} /> },
+            { key: 'status', label: 'Status', render: (o) => <span className="inline-flex items-center gap-2">{(o.status === 'pending' || o.status === 'placed') && <Badge tone="amber">New</Badge>}<StatusBadge status={o.status} label={ORDER_STATUS[o.status]} /></span> },
             { key: 'payment', label: 'Payment', render: (o) => <span className="flex flex-col gap-1"><StatusBadge status={o.payment_status} label={PAYMENT_STATUS[o.payment_status]} /><span className="text-[0.75rem] text-graphite">{PAYMENT_METHOD[o.payment_method]}</span></span> },
             { key: 'total', label: 'Total', className: 'text-right', render: (o) => formatINR(o.total) },
           ]}

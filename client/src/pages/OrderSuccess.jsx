@@ -8,10 +8,12 @@ import { useSite } from '../context/SiteContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatPhone } from '../utils/format.js';
 import { EASE } from '../components/ui/Reveal.jsx';
+import { useOrderStatusEvents } from '../hooks/useOrderStatusEvents.js';
 
 export default function OrderSuccess() {
   const { orderNumber } = useParams();
-  const { data, error, loading } = useApi(`/orders/confirmation/${encodeURIComponent(orderNumber)}`);
+  const { data, error, loading, reload } = useApi(`/orders/confirmation/${encodeURIComponent(orderNumber)}`);
+  useOrderStatusEvents(orderNumber, data?.order?.status, reload, Boolean(data?.order));
   const { s } = useSite();
   const { customer } = useAuth();
 

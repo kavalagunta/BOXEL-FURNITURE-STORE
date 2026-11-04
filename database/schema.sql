@@ -235,7 +235,7 @@ CREATE TABLE IF NOT EXISTS orders (
   discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   total DECIMAL(12,2) NOT NULL,
   currency CHAR(3) NOT NULL DEFAULT 'INR',
-  status ENUM('placed','pending','accepted','confirmed','processing','shipped','delivered','rejected','cancelled') NOT NULL DEFAULT 'placed',
+  status ENUM('placed','pending','accepted','confirmed','processing','shipped','delivered','rejected','cancelled') NOT NULL DEFAULT 'pending',
   accepted_at DATETIME NULL,
   accepted_by INT UNSIGNED NULL,
   rejected_at DATETIME NULL,
@@ -260,6 +260,20 @@ CREATE TABLE IF NOT EXISTS orders (
   KEY idx_orders_phone (customer_phone),
   CONSTRAINT chk_orders_total CHECK (total >= 0),
   CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Persistent per-admin unread state for newly placed orders.
+CREATE TABLE IF NOT EXISTS admin_order_notifications (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  admin_id INT UNSIGNED NOT NULL,
+  order_id INT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  read_at DATETIME NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admin_order_notifications_order_admin (order_id, admin_id),
+  KEY idx_admin_order_notifications_unread (admin_id, read_at, id),
+  CONSTRAINT fk_admin_order_notifications_admin FOREIGN KEY (admin_id) REFERENCES admins (id) ON DELETE CASCADE,
+  CONSTRAINT fk_admin_order_notifications_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Snapshot of each purchased line; stays correct if the product changes later.

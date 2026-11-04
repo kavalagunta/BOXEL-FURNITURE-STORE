@@ -6,6 +6,7 @@ import { notifyOrderStatus, retryEmail, retryNotificationLog, sendCustomerOrderF
 import { pagination, pageMeta, likeTerm } from '../../utils/helpers.js';
 import { text, optionalText, httpsUrl } from '../../utils/validators.js';
 import { HttpError, badRequest, notFound } from '../../utils/httpError.js';
+import { broadcastOrderStatus } from '../../services/adminOrderEvents.js';
 
 export const statusSchema = z.object({
   status: z.enum(ORDER_STATUSES),
@@ -98,6 +99,11 @@ export async function updateStatus(req, res) {
     cancelReason: reason,
     rejectionReason: reason,
   });
+  try {
+    await broadcastOrderStatus(id);
+  } catch (err) {
+    console.error(`[customer-order-events] could not broadcast status for order ${id}:`, err.message);
+  }
   await logActivity(req, 'order.status', 'order', id, { from: result.from, to: result.to, note: reason || undefined });
   if (d.notifyCustomer) {
     setImmediate(async () => {

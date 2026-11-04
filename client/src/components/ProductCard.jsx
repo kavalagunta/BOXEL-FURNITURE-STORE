@@ -25,10 +25,10 @@ export default function ProductCard({ product, layout = 'grid', priority = false
   };
 
   return (
-    <motion.article variants={staggerItem} className={`group relative flex flex-col ${compact ? 'product-card--compact' : ''} ${wide ? 'lg:grid lg:grid-cols-12 lg:items-center lg:gap-12' : ''}`}>
+    <motion.article variants={staggerItem} className={`group relative flex flex-col ${compact ? 'product-card--compact h-[33rem] min-w-0 overflow-hidden rounded-[14px] border border-hairline bg-white p-2.5 shadow-[0_2px_8px_rgba(23,23,23,0.06)] transition-[transform,box-shadow,border-color] duration-200 ease-out max-sm:h-[21.5rem] max-sm:p-2' : ''} ${wide ? 'lg:grid lg:grid-cols-12 lg:items-center lg:gap-12' : ''}`}>
       <Link
         to={`/products/${product.slug}`}
-        className={`product-card__media relative block overflow-hidden rounded-sm bg-[linear-gradient(180deg,var(--color-studio-top),var(--color-studio-floor))] ${wide ? 'aspect-[1309/1202] lg:col-span-7' : compact ? 'aspect-square' : 'aspect-[4/5]'}`}
+          className={`product-card__media relative block overflow-hidden bg-[linear-gradient(180deg,var(--color-studio-top),var(--color-studio-floor))] ${compact ? 'aspect-[4/5] rounded-[10px]' : wide ? 'aspect-[1309/1202] rounded-sm lg:col-span-7' : 'aspect-[4/5] rounded-sm'}`}
         aria-label={product.name}
       >
         {img && (
@@ -61,7 +61,7 @@ export default function ProductCard({ product, layout = 'grid', priority = false
         <AvailabilityBadge availability={product.availability} className="absolute left-3 top-3" />
       </Link>
 
-      <div className={`product-card__details flex flex-1 flex-col ${wide ? 'pt-6 lg:col-span-5 lg:pt-0' : 'pt-4'}`}>
+      <div className={`product-card__details flex flex-1 flex-col ${compact ? 'min-w-0 px-0.5 pb-0.5 pt-3' : wide ? 'pt-6 lg:col-span-5 lg:pt-0' : 'pt-4'}`}>
         {product.category && <p className="product-card__category text-[0.8125rem] text-graphite">{product.category.name}</p>}
         <h3 className={`product-card__name ${wide ? 'mt-2 text-headline font-light' : 'mt-1 text-lg font-medium leading-snug'}`}>
           <Link to={`/products/${product.slug}`} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none lg:after:content-none">
@@ -112,8 +112,8 @@ export default function ProductCard({ product, layout = 'grid', priority = false
 
 export function ProductCardSkeleton({ compact = false }) {
   return (
-    <div aria-hidden className={compact ? 'product-card-skeleton--compact' : ''}>
-      <div className={`skeleton w-full ${compact ? 'aspect-square' : 'aspect-[4/5]'}`} />
+    <div aria-hidden className={compact ? 'product-card-skeleton--compact h-[33rem] min-w-0 overflow-hidden rounded-[14px] border border-hairline bg-white p-2.5 shadow-[0_2px_8px_rgba(23,23,23,0.06)] max-sm:h-[21.5rem] max-sm:p-2' : ''}>
+      <div className="skeleton aspect-[4/5] w-full" />
       <div className={`skeleton h-3 w-24 ${compact ? 'mt-3' : 'mt-4'}`} />
       <div className="skeleton mt-2 h-5 w-3/4" />
       <div className="skeleton mt-3 h-4 w-1/3" />

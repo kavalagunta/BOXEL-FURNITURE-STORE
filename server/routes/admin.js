@@ -18,6 +18,7 @@ import * as enquiries from '../controllers/admin/enquiryController.js';
 import * as content from '../controllers/admin/contentController.js';
 import * as system from '../controllers/admin/systemController.js';
 import * as vendors from '../controllers/admin/vendorController.js';
+import * as orderEvents from '../services/adminOrderEvents.js';
 
 const r = Router();
 
@@ -33,6 +34,8 @@ r.get('/auth/me', auth.me);
 const staff = requireRole('support', 'admin');
 r.get('/dashboard', staff, dash.stats);
 r.get('/notifications', staff, dash.notifications);
+r.post('/notifications/orders/read', staff, dash.markOrderNotificationsRead);
+r.get('/events/orders', staff, orderEvents.openOrderEventStream);
 r.get('/search', staff, dash.search);
 
 r.get('/orders', staff, orders.list);
