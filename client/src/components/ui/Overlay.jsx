@@ -8,6 +8,11 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), selec
 
 /** Traps focus inside the panel, closes on Escape, locks page scroll and restores focus on close. */
 function useDialogBehaviour(open, onClose, panelRef) {
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return undefined;
     const previous = document.activeElement;
@@ -20,7 +25,7 @@ function useDialogBehaviour(open, onClose, panelRef) {
     const onKey = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
       }
       if (e.key === 'Tab' && panelRef.current) {
         const nodes = [...panelRef.current.querySelectorAll(FOCUSABLE)].filter((n) => n.offsetParent !== null);
@@ -43,7 +48,7 @@ function useDialogBehaviour(open, onClose, panelRef) {
       document.body.style.overflow = overflow;
       if (previous && previous.focus) previous.focus();
     };
-  }, [open, onClose, panelRef]);
+  }, [open, panelRef]);
 }
 
 export function Modal({ open, onClose, title, children, size = 'max-w-lg', hideTitle = false }) {

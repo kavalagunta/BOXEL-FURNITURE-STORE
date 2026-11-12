@@ -25,7 +25,7 @@ export function OrdersList() {
     if (k !== 'page') n.delete('page');
     setParams(n, { replace: true });
   };
-  const query = qs({ q: params.get('q'), status: params.get('status'), payment: params.get('payment'), from: params.get('from'), to: params.get('to'), page: params.get('page') });
+  const query = qs({ q: params.get('q'), status: params.get('status'), payment: params.get('payment'), from: params.get('from'), to: params.get('to'), page: params.get('page'), limit: 5 });
   const { data, loading, error, reload } = useApi(`/admin/orders${query}`);
 
   useEffect(() => {

@@ -16,7 +16,10 @@ function CategoryEditor({ initial, onClose, onSaved }) {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e?.target ? e.target.value : e });
+  const set = (k) => (e) => {
+    const value = e?.target ? e.target.value : e;
+    setForm((current) => ({ ...current, [k]: value }));
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -66,10 +69,12 @@ export default function Categories() {
   const [deleting, setDeleting] = useState(null);
   const [reassignTo, setReassignTo] = useState('');
   const [deleteError, setDeleteError] = useState('');
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   if (error) return <ErrorState error={error} onRetry={reload} />;
   if (loading && !data) return <PageLoader />;
   const items = data.items;
+  const reassignmentCategories = items.filter((c) => Number(c.id) !== Number(deleting?.id) && c.status === 'active');
 
   const move = async (i, d) => {
     const ids = items.map((c) => c.id);
@@ -79,6 +84,7 @@ export default function Categories() {
   };
 
   const confirmDelete = async () => {
+    setDeleteBusy(true);
     try {
       await del(`/admin/categories/${deleting.id}`, reassignTo ? { reassignTo: Number(reassignTo) } : undefined);
       toast.success('Category deleted.');
@@ -86,6 +92,8 @@ export default function Categories() {
       reload();
     } catch (ex) {
       setDeleteError(ex.message);
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
@@ -156,20 +164,21 @@ export default function Categories() {
         )}
       </Modal>
 
-      <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} onConfirm={confirmDelete} title={`Delete ${deleting?.name}?`} confirmLabel="Delete category" danger>
+      <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} onConfirm={confirmDelete} title={`Delete ${deleting?.name}?`} confirmLabel="Delete category" danger busy={deleteBusy} disabled={deleting?.product_count > 0 && (!reassignTo || reassignmentCategories.length === 0)}>
         {deleting?.product_count > 0 ? (
           <div className="space-y-3">
             <p className="text-graphite">
               This category has {deleting.product_count} product{deleting.product_count === 1 ? '' : 's'}. Choose a category to move them to before deleting.
             </p>
-            <Field label="Move products to" as="select" value={reassignTo} onChange={(e) => setReassignTo(e.target.value)}>
+            <Field label={`Move products to (${reassignmentCategories.length} available categories)`} as="select" value={reassignTo} onChange={(e) => setReassignTo(e.target.value)}>
               <option value="">Choose…</option>
-              {items.filter((c) => c.id !== deleting.id).map((c) => (
+              {reassignmentCategories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.name} · {c.product_count} product{c.product_count === 1 ? '' : 's'}
                 </option>
               ))}
             </Field>
+            {reassignmentCategories.length === 0 && <p className="text-sm text-danger">Create or activate another category before deleting this one; its products need an available destination.</p>}
           </div>
         ) : (
           <p className="text-graphite">This category has no products. It will be removed permanently.</p>

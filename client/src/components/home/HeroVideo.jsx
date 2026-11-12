@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
 import { useReducedMotion } from 'framer-motion';
 
 /**
@@ -17,7 +16,7 @@ import { useReducedMotion } from 'framer-motion';
  * - IntersectionObserver: pauses video when off-screen to save bandwidth
  * - Tab visibility listener: pauses video when page is hidden
  * - Respects prefers-reduced-motion by keeping video paused with poster
- * - Small, elegant mute/unmute toggle button without download options
+ * - Video remains muted without visible controls
  * - Fallback to poster image on load error
  */
 export default function HeroVideo({
@@ -26,10 +25,11 @@ export default function HeroVideo({
   poster = '/images/parcel-drop-box-front.jpeg',
   alt = 'boxel Parcel Drop Box showcase',
   className = '',
+  loop = true,
+  onEnded,
 }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
-  const [isMuted, setIsMuted] = useState(true);
   const [blobUrl, setBlobUrl] = useState(null);
   const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -117,16 +117,6 @@ export default function HeroVideo({
     };
   }, [reduceMotion, blobUrl]);
 
-  // Audio Toggle
-  const toggleAudio = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (!videoRef.current) return;
-    const newMuted = !videoRef.current.muted;
-    videoRef.current.muted = newMuted;
-    setIsMuted(newMuted);
-  };
-
   // Prevent right-click context menu
   const preventContext = (e) => {
     e.preventDefault();
@@ -162,8 +152,8 @@ export default function HeroVideo({
             src={blobUrl || videoSrc}
             poster={posterSource}
             autoPlay
-            muted={isMuted}
-            loop
+            muted
+            loop={loop}
             playsInline
             preload="metadata"
             draggable="false"
@@ -174,6 +164,7 @@ export default function HeroVideo({
             onContextMenu={preventContext}
             onError={() => setHasError(true)}
             onLoadedData={() => setIsLoaded(true)}
+            onEnded={onEnded}
             className="size-full object-cover object-center rounded-2xl transition-opacity duration-700 pointer-events-none"
             style={{
               WebkitTouchCallout: 'none',
@@ -199,21 +190,6 @@ export default function HeroVideo({
             }}
           />
 
-          {/* Audio toggle button (does not expose any native video controls or download menu) */}
-          <button
-            type="button"
-            onClick={toggleAudio}
-            onContextMenu={preventContext}
-            aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
-            title={isMuted ? 'Unmute' : 'Mute'}
-            className="absolute top-4 right-4 z-20 grid size-9 place-items-center rounded-full bg-black/40 text-white backdrop-blur-md border border-white/20 shadow-md hover:bg-black/60 transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
-          >
-            {isMuted ? (
-              <VolumeX className="size-4 text-white" aria-hidden="true" />
-            ) : (
-              <Volume2 className="size-4 text-white" aria-hidden="true" />
-            )}
-          </button>
         </>
       )}
     </div>

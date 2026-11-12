@@ -55,7 +55,7 @@ export default function OrderSuccess() {
               Thank you, {firstName}.
             </motion.h1>
             <p className="mt-3 text-lead text-graphite">
-              Your order <strong className="font-medium text-ink">{order.order_number}</strong> has been received. We will send the confirmation to {order.customer_email}.
+              Your order <strong className="font-medium text-ink">{order.order_number}</strong> has been received. Our team will call you at {formatPhone(order.customer_phone)} soon to confirm your order and discuss payment and dispatch details.
             </p>
           </div>
         </div>
@@ -65,7 +65,7 @@ export default function OrderSuccess() {
           <ol className="mt-5 grid gap-6 text-[0.9375rem] sm:grid-cols-3">
             <li>
               <span className="text-3xl font-extralight">1</span>
-              <p className="mt-2">We confirm your order and the expected dispatch date{order.payment_method === 'bank_transfer' ? ', and share payment details' : ''}.</p>
+              <p className="mt-2">Our team calls you to confirm your order, discuss payment arrangements and share the expected dispatch date.</p>
             </li>
             <li>
               <span className="text-3xl font-extralight">2</span>
@@ -91,7 +91,7 @@ export default function OrderSuccess() {
             </p>
             <a
               href={`https://wa.me/${String(s.business_whatsapp).replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                `Hi, I just placed order #${order.order_number} for ₹${Number(order.total).toLocaleString('en-IN')}. Please share tracking and dispatch updates.`
+                `Hi, I just placed order #${order.order_number} for ₹${Number(order.total).toLocaleString('en-IN')}. Please confirm my order and share payment and dispatch details.`
               )}`}
               target="_blank"
               rel="noopener noreferrer"

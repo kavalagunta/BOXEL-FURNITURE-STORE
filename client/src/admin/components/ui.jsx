@@ -170,7 +170,7 @@ export function Toggle({ checked, onChange, label, description, disabled }) {
   );
 }
 
-export function ConfirmDialog({ open, onClose, onConfirm, title, body, confirmLabel = 'Confirm', danger = false, busy = false, children }) {
+export function ConfirmDialog({ open, onClose, onConfirm, title, body, confirmLabel = 'Confirm', danger = false, busy = false, disabled = false, children }) {
   return (
     <Modal open={open} onClose={onClose} title={title}>
       {body && <p className="text-graphite">{body}</p>}
@@ -179,7 +179,7 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, body, confirmLa
         <button type="button" className="btn btn-secondary btn-sm" onClick={onClose}>
           Cancel
         </button>
-        <button type="button" className={`btn btn-sm ${danger ? 'bg-danger text-white hover:bg-danger/90' : 'btn-primary'}`} onClick={onConfirm} disabled={busy}>
+        <button type="button" className={`btn btn-sm ${danger ? 'bg-danger text-white hover:bg-danger/90' : 'btn-primary'}`} onClick={onConfirm} disabled={busy || disabled}>
           {busy ? 'Working…' : confirmLabel}
         </button>
       </div>

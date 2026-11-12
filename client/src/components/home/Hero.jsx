@@ -1,7 +1,7 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
-import { Lock, Truck } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HeroVideo from './HeroVideo.jsx';
 import { EASE } from '../ui/Reveal.jsx';
 
@@ -19,40 +19,29 @@ const DEFAULT = {
 
 function SmartLink({ to, className, children }) {
   if (/^https?:\/\//.test(to)) {
-    return (
-      <a href={to} className={className} target="_blank" rel="noopener noreferrer">
-        {children}
-      </a>
-    );
+    return <a href={to} className={className} target="_blank" rel="noopener noreferrer">{children}</a>;
   }
-  return (
-    <Link to={to} className={className}>
-      {children}
-    </Link>
-  );
+  return <Link to={to} className={className}>{children}</Link>;
 }
 
 /** Splits the headline at sentence breaks so each line can rise in sequence. */
 const lines = (text) => text.match(/[^.!?]+[.!?]?/g)?.map((s) => s.trim()).filter(Boolean) || [text];
 
-// The logo mark, rebuilt as three skewed tiles. Positions are in % of the mark box.
-const TILES = [
-  { left: '0%', top: '0%', w: '44%', h: '46%', delay: 0.15 },
-  { left: '0%', top: '56%', w: '44%', h: '46%', delay: 0.25 },
-  { left: '52%', top: '34%', w: '44%', h: '46%', delay: 0.35 },
-];
-
 export default function Hero({ banner }) {
   const b = { ...DEFAULT, ...Object.fromEntries(Object.entries(banner || {}).filter(([, v]) => v)) };
   const reduce = useReducedMotion();
   const section = useRef(null);
+  const [activeVideo, setActiveVideo] = useState(0);
+  const videos = [
+    { src: b.video_url || '/videos/big-parcel-box-no-text.mp4', alt: b.image_alt || 'boxel Parcel Drop Box showcase' },
+    { src: '/videos/small-parcel-box-no-text.mp4', alt: 'boxel Small Parcel Box showcase' },
+  ];
 
   // Scroll-linked depth: the product drifts up slower than the page, the studio panel slower still.
   const { scrollYProgress } = useScroll({ target: section, offset: ['start start', 'end start'] });
   const productY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -70]);
   const productScale = useTransform(scrollYProgress, [0, 1], [1, reduce ? 1 : 0.94]);
   const panelY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : 40]);
-  const tilesY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -140]);
 
   // Pointer tilt (desktop pointers only), bounded to a few degrees.
   const px = useMotionValue(0);
@@ -78,41 +67,18 @@ export default function Hero({ banner }) {
           <h1 id="hero-title" className="text-display-xl font-light text-ink">
             {lines(b.headline).map((line, i) => (
               <span key={i} className="block overflow-hidden pb-[0.06em]">
-                <motion.span
-                  className="block"
-                  initial={{ y: '105%' }}
-                  animate={{ y: 0 }}
-                  transition={{ duration: 1, delay: 0.55 + i * 0.12, ease: EASE }}
-                >
+                <motion.span className="block" initial={{ y: '105%' }} animate={{ y: 0 }} transition={{ duration: 1, delay: 0.55 + i * 0.12, ease: EASE }}>
                   {line}
                 </motion.span>
               </span>
             ))}
           </h1>
-          <motion.p
-            className="mt-6 max-w-[34ch] text-lead text-graphite"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.85, ease: EASE }}
-          >
+          <motion.p className="mt-6 max-w-[34ch] text-lead text-graphite" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.85, ease: EASE }}>
             {b.subheadline}
           </motion.p>
-          <motion.div
-            className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1, ease: EASE }}
-          >
-            {b.cta_text && b.cta_url && (
-              <SmartLink to={b.cta_url} className="btn btn-primary group">
-                {b.cta_text}
-              </SmartLink>
-            )}
-            {b.secondary_cta_text && b.secondary_cta_url && (
-              <SmartLink to={b.secondary_cta_url} className="link py-2 text-[0.9375rem] font-medium">
-                {b.secondary_cta_text}
-              </SmartLink>
-            )}
+          <motion.div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1, ease: EASE }}>
+            {b.cta_text && b.cta_url && <SmartLink to={b.cta_url} className="btn btn-primary group">{b.cta_text}</SmartLink>}
+            {b.secondary_cta_text && b.secondary_cta_url && <SmartLink to={b.secondary_cta_url} className="link py-2 text-[0.9375rem] font-medium">{b.secondary_cta_text}</SmartLink>}
           </motion.div>
         </div>
 
@@ -135,67 +101,38 @@ export default function Hero({ banner }) {
               className="relative h-full w-full flex items-center justify-center"
             >
               <HeroVideo
-                videoSrc={b.video_url || '/videos/hero.mp4'}
-                webmSrc={b.video_url ? '' : '/videos/hero.webm'}
+                key={videos[activeVideo].src}
+                videoSrc={videos[activeVideo].src}
+                webmSrc=""
                 poster={b.desktop_image_url}
-                alt={b.image_alt || 'boxel Parcel Drop Box showcase'}
+                alt={videos[activeVideo].alt}
                 className="w-full h-full max-h-[560px] object-cover"
+                loop={false}
+                onEnded={() => setActiveVideo((current) => (current + 1) % videos.length)}
               />
+              <div className="pointer-events-none absolute inset-y-0 left-2 right-2 z-20 flex items-center justify-between sm:left-4 sm:right-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveVideo((current) => (current + videos.length - 1) % videos.length)}
+                  aria-label="Show previous product video"
+                  className="pointer-events-auto grid size-10 place-items-center rounded-full border border-white/50 bg-black/35 text-white shadow-lg backdrop-blur-md transition duration-200 hover:scale-105 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:size-12"
+                >
+                  <ChevronLeft className="size-5" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveVideo((current) => (current + 1) % videos.length)}
+                  aria-label="Show next product video"
+                  className="pointer-events-auto grid size-10 place-items-center rounded-full border border-white/50 bg-black/35 text-white shadow-lg backdrop-blur-md transition duration-200 hover:scale-105 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:size-12"
+                >
+                  <ChevronRight className="size-5" aria-hidden="true" />
+                </button>
+              </div>
             </motion.div>
 
-            {/* Floating spec card: frosted glass over the studio, verified facts only. */}
-            <motion.div
-              className="absolute bottom-6 right-4 z-10 rounded-md border border-white/60 bg-white/70 p-4 shadow-[var(--shadow-float)] backdrop-blur-md sm:right-8 lg:bottom-16 lg:right-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 1.25, ease: EASE }}
-            >
-              <ul className="space-y-2.5 text-[0.8125rem] text-ink">
-                <li className="flex items-center gap-2.5">
-                  <span className="grid size-7 place-items-center rounded-full bg-signal-soft text-signal-ink"><Lock className="size-3.5" aria-hidden /></span>
-                  Keyless number lock
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <span className="grid size-7 place-items-center rounded-full bg-signal-soft text-signal-ink"><Truck className="size-3.5" aria-hidden /></span>
-                  Free shipping across India
-                </li>
-              </ul>
-            </motion.div>
-
-            {/* Logo-mark tiles: the one orchestrated moment on load. */}
-            <motion.div aria-hidden style={{ y: tilesY }} className="pointer-events-none absolute bottom-8 left-5 h-20 w-16 sm:bottom-10 sm:left-8 sm:h-28 sm:w-24 lg:bottom-16 lg:left-12 lg:h-32 lg:w-28">
-              {TILES.map((t, i) => (
-                <motion.span
-                  key={i}
-                  className={`absolute ${i === 2 ? 'bg-signal' : 'bg-white'} shadow-[0_20px_40px_-20px_rgb(23_23_23/0.35)]`}
-                  style={{ left: t.left, top: t.top, width: t.w, height: t.h, skewY: '-24deg' }}
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.9, delay: 0.6 + t.delay, ease: EASE }}
-                />
-              ))}
-            </motion.div>
           </div>
         </div>
       </div>
-
-      {/* Scroll cue */}
-      <motion.div
-        aria-hidden
-        className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[0.6875rem] text-graphite lg:left-[max(2.5rem,calc((100vw-1320px)/2+2.5rem))] lg:flex lg:translate-x-0 lg:items-start"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6, duration: 0.8 }}
-      >
-        <span>Scroll</span>
-        <span className="relative block h-10 w-px overflow-hidden bg-hairline">
-          <motion.span
-            className="absolute inset-x-0 top-0 h-3 bg-ink"
-            animate={reduce ? {} : { y: [-12, 40] }}
-            transition={{ duration: 1.8, repeat: 3, repeatDelay: 1.2, ease: 'easeInOut' }}
-          />
-        </span>
-      </motion.div>
     </section>
   );
 }

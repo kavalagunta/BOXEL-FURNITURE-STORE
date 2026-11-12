@@ -18,7 +18,7 @@ export function CustomersList() {
     if (k !== 'page') n.delete('page');
     setParams(n, { replace: true });
   };
-  const { data, loading, error, reload } = useApi(`/admin/customers${qs({ q: params.get('q'), status: params.get('status'), has_orders: params.get('has_orders'), page: params.get('page') })}`);
+  const { data, loading, error, reload } = useApi(`/admin/customers${qs({ q: params.get('q'), status: params.get('status'), has_orders: params.get('has_orders'), page: params.get('page'), limit: 5 })}`);
   return (
     <>
       <PageHeader title="Customers" description="Registered customer accounts. Guest orders appear under Orders." />

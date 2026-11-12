@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
-import { AlertTriangle, Eye, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { PageHeader, Card, Table, Pagination, SearchInput, Select, StatusBadge, Toggle, ConfirmDialog, Toolbar, titleCase } from '../components/ui.jsx';
 import { ImageListEditor, SingleImageField } from '../components/ImageUploader.jsx';
 import { Field, FormError } from '../../components/ui/Field.jsx';
@@ -21,6 +21,24 @@ export function ProductsList() {
   };
   const { data, loading, error, reload } = useApi(`/admin/products${qs({ q: params.get('q'), status: params.get('status'), page: params.get('page') })}`);
   const navigate = useNavigate();
+  const toast = useToast();
+  const [deleting, setDeleting] = useState(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const removeProduct = async () => {
+    if (!deleting) return;
+    setDeleteBusy(true);
+    try {
+      await del(`/admin/products/${deleting.id}`);
+      toast.success('Product deleted.');
+      setDeleting(null);
+      reload();
+    } catch (ex) {
+      toast.error(ex.message);
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
 
   return (
     <>
@@ -92,10 +110,35 @@ export function ProductsList() {
             },
             { key: 'stock', label: 'Stock', render: (p) => (p.track_stock ? `${p.stock} across ${p.variant_count} variant${p.variant_count === 1 ? '' : 's'}` : 'Made to order') },
             { key: 'updated_at', label: 'Updated', render: (p) => formatDate(p.updated_at) },
+            {
+              key: 'actions',
+              label: 'Actions',
+              className: 'w-24',
+              render: (p) => (
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <Link to={`/admin/products/${p.id}/edit`} className="rounded p-2 hover:bg-stone" aria-label={`Edit ${p.name}`} title="Edit product">
+                    <Pencil className="size-4" aria-hidden="true" />
+                  </Link>
+                  <button type="button" className="rounded p-2 text-danger hover:bg-danger/10" onClick={() => setDeleting(p)} aria-label={`Delete ${p.name}`} title="Delete product">
+                    <Trash2 className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+              ),
+            },
           ]}
         />
         <Pagination meta={data?.meta} onPage={(p) => set('page', String(p))} />
       </Card>
+      <ConfirmDialog
+        open={Boolean(deleting)}
+        onClose={() => setDeleting(null)}
+        onConfirm={removeProduct}
+        title={`Delete ${deleting?.name || 'this product'}?`}
+        body="This permanently removes the product, its images and its variants. Products in past orders cannot be deleted; archive those instead."
+        confirmLabel="Delete product"
+        danger
+        busy={deleteBusy}
+      />
     </>
   );
 }

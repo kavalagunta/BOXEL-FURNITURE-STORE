@@ -16,7 +16,7 @@ import { INDIAN_STATES, isEmail, isIndianMobile, isPincode } from '../utils/vali
 const EMPTY = { fullName: '', email: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', deliveryInstructions: '', orderNotes: '' };
 
 const PAYMENT_HELP = {
-  cod: 'Pay in cash when your order is delivered.',
+  cod: 'Our team will contact you after you place your order to confirm it and discuss payment and dispatch details.',
   bank_transfer: 'Our team contacts you with payment details after you place the order. We start production once payment is received.',
 };
 
@@ -171,7 +171,7 @@ export default function Checkout() {
             <fieldset className="grid gap-5 sm:grid-cols-2">
               <legend className="mb-6 text-title font-medium">Contact</legend>
               <Field label="Full name" value={form.fullName} onChange={set('fullName')} error={errors.fullName} autoComplete="name" className="sm:col-span-2" maxLength={120} />
-              <Field label="Email" type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" hint="Your order confirmation is sent here." />
+              <Field label="Email" type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" />
               <Field label="Mobile number" type="tel" inputMode="tel" value={form.phone} onChange={set('phone')} error={errors.phone} autoComplete="tel" placeholder="98450 12345" hint="10-digit Indian mobile number." />
             </fieldset>
 
@@ -275,7 +275,7 @@ export default function Checkout() {
               </div>
               <button type="submit" className="btn btn-primary mt-4 w-full" disabled={submitting || blocked || noPayment}>
                 {submitting && <Spinner className="size-4" label="Placing order" />}
-                {submitting ? 'Placing your order…' : quote ? `Place Order (COD) — ${formatINR(quote.total)}` : 'Place Order (COD)'}
+                {submitting ? 'Placing your order…' : quote ? `Place Order — ${formatINR(quote.total)}` : 'Place Order'}
               </button>
               <p className="mt-4 text-[0.8125rem] leading-relaxed text-graphite">
                 By placing your order you agree to our{' '}
