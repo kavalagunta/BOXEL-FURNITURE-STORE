@@ -12,7 +12,7 @@ export async function upload(req, res) {
   if (!['products', 'categories', 'banners', 'site'].includes(folder)) throw new HttpError(400, 'Unknown upload folder.');
   const files = req.files?.length ? req.files : req.file ? [req.file] : [];
   if (!files.length) throw new HttpError(400, 'Choose an image to upload.');
-  const cloudFolder = folder === 'products' ? 'shop/products' : 'shop/banners';
+  const cloudFolder = `shop/${folder}`;
   const saved = await Promise.all(files.map((file) => uploadMedia(file, cloudFolder)));
   await logActivity(req, 'upload.image', folder, null, { files: saved.map((s) => ({ url: s.url, public_id: s.public_id })) });
   res.status(201).json({ files: saved });

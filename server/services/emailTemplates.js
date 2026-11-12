@@ -115,7 +115,7 @@ export function orderCustomerEmail({ order, items, settings, orderUrl }) {
   const payment = `${paymentLabel(order.payment_method)} — ${paymentStatusLabel(order.payment_status)}`;
   const body = `${h1('Thank you for your order')}
 ${p(`Hi ${e(order.customer_name)}, we have received your order <strong>${e(order.order_number)}</strong> placed on ${e(fmtDate(order.created_at))}.`)}
-${p('Every boxel product is made to order. We will confirm your order and expected dispatch date, and share a video of your product’s quality and functions before it ships.')}
+${p(`Our team will call you at ${e(prettyPhone(order.customer_phone))} soon to confirm your order, discuss payment arrangements and share the expected dispatch date. Every boxel product is made to order; we will also share a video of its quality and functions before it ships.`)}
 ${itemsTable(items)}
 ${totalsTable(order)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -124,7 +124,7 @@ ${totalsTable(order)}
 </tr></table>
 ${order.payment_method === 'bank_transfer' && settings.bank_transfer_instructions ? p(e(settings.bank_transfer_instructions)) : ''}
 ${orderUrl ? `<p style="margin:8px 0 0;"><a href="${e(orderUrl)}" style="display:inline-block;background:${C.ink};color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:4px;font-weight:600;">View your order</a></p>` : ''}`;
-  const text = `Thank you for your order\n\nOrder ${order.order_number} — placed ${fmtDate(order.created_at)}\n\n${itemsText(items)}\n\n${totalsText(order)}\n\nDelivery address:\n${addressText(order)}\n\nPayment: ${payment}\n${order.payment_method === 'bank_transfer' ? `\n${settings.bank_transfer_instructions || ''}\n` : ''}\nEvery boxel product is made to order. We will confirm your order and share a quality-check video before dispatch.\n${orderUrl ? `\nView your order: ${orderUrl}\n` : ''}\nQuestions? Call or WhatsApp ${prettyPhone(settings.business_phone)}.`;
+  const text = `Thank you for your order\n\nOrder ${order.order_number} — placed ${fmtDate(order.created_at)}\n\n${itemsText(items)}\n\n${totalsText(order)}\n\nDelivery address:\n${addressText(order)}\n\nPayment: ${payment}\n${order.payment_method === 'bank_transfer' ? `\n${settings.bank_transfer_instructions || ''}\n` : ''}\nOur team will call you at ${prettyPhone(order.customer_phone)} soon to confirm your order, discuss payment arrangements and share the expected dispatch date. Every boxel product is made to order. We will also share a quality-check video before dispatch.\n${orderUrl ? `\nView your order: ${orderUrl}\n` : ''}\nQuestions? Call or WhatsApp ${prettyPhone(settings.business_phone)}.`;
   return { subject, html: layout({ preheader: `Order ${order.order_number} received`, body, settings }), text };
 }
 

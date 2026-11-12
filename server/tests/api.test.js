@@ -109,6 +109,59 @@ describe('product catalogue', () => {
   });
 });
 
+describe('category administration', () => {
+  it('publishes a newly created category and its Cloudinary image', async () => {
+    const admin = await adminClient('super_admin');
+    const slug = `test-category-${Date.now()}`;
+    const imageUrl = 'https://res.cloudinary.com/example/image/upload/v1/shop/categories/test.jpg';
+    const created = await admin.post('/api/admin/categories').send({
+      name: 'Test category',
+      slug,
+      description: 'A category used to verify homepage publishing.',
+      image_url: imageUrl,
+      status: 'active',
+    });
+
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+
+    const categories = await request(app).get('/api/categories');
+    const published = categories.body.items.find((category) => category.slug === slug);
+    assert.ok(published);
+    assert.equal(published.image_url, imageUrl);
+    assert.equal(published.status, 'active');
+
+    const removed = await admin.delete(`/api/admin/categories/${created.body.id}`);
+    assert.equal(removed.status, 200);
+  });
+
+  it('moves a category’s products to the selected category before deleting it', async () => {
+    const admin = await adminClient('super_admin');
+    const targets = await db.query('SELECT id FROM categories ORDER BY sort_order, id LIMIT 1');
+    assert.ok(targets.length);
+    const created = await admin.post('/api/admin/categories').send({
+      name: 'Category to remove',
+      slug: `category-to-remove-${Date.now()}`,
+      status: 'active',
+    });
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+
+    const productSlug = `category-delete-test-${Date.now()}`;
+    const product = await db.query(
+      "INSERT INTO products (category_id, name, slug, sku, status) VALUES (?, 'Category delete test product', ?, ?, 'draft')",
+      [created.body.id, productSlug, `CDT-${Date.now()}`],
+    );
+
+    const removed = await admin.delete(`/api/admin/categories/${created.body.id}`).send({ reassignTo: targets[0].id });
+    assert.equal(removed.status, 200, JSON.stringify(removed.body));
+
+    const moved = await db.query('SELECT category_id FROM products WHERE id = ?', [product.insertId]);
+    assert.equal(moved[0].category_id, targets[0].id);
+    assert.equal(await db.queryOne('SELECT id FROM categories WHERE id = ?', [created.body.id]), null);
+
+    await db.query('DELETE FROM products WHERE id = ?', [product.insertId]);
+  });
+});
+
 describe('admin access control', () => {
   it('blocks unauthenticated admin API access', async () => {
     const c = await client();
