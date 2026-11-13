@@ -104,10 +104,10 @@ export function Categories({ data, loading, error, reload }) {
     <section className="py-20 sm:py-28 lg:py-32" aria-labelledby="cat-title">
       <div className="shell">
         <Reveal className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <h2 id="cat-title" className="max-w-xl text-headline font-light">
+          <h2 id="cat-title" className="max-w-xl text-headline font-light text-black">
             One idea, many rooms
           </h2>
-          <p className="max-w-[44ch] text-lead text-graphite">The Parcel Drop Box is available now. More boxel products for storage and small spaces are on the way.</p>
+          <p className="max-w-[44ch] text-lead text-black">The Parcel Drop Box is available now. More boxel products for storage and small spaces are on the way.</p>
         </Reveal>
         {error && (
           <div className="mt-10">
@@ -161,9 +161,9 @@ export function Categories({ data, loading, error, reload }) {
 
                   <span className="relative z-[2] mt-auto flex items-end justify-between gap-4 pt-10">
                     <span className={wide ? 'max-w-[55%]' : ''}>
-                      <span className={`block font-light tracking-tight ${big ? 'text-headline' : 'text-title'}`}>{c.name}</span>
+                      <span className={`block font-light tracking-tight text-signal ${big ? 'text-headline' : 'text-title'}`}>{c.name}</span>
                       {c.description && (
-                        <span className={`mt-2 block text-sm leading-relaxed ${c.image_url || dark ? 'text-white/70' : 'text-graphite'} ${big ? 'max-w-[36ch]' : 'line-clamp-3'}`}>{c.description}</span>
+                        <span className={`mt-2 block text-sm font-medium leading-relaxed text-black ${big ? 'max-w-[36ch]' : 'line-clamp-3'}`}>{c.description}</span>
                       )}
                     </span>
                     <span
