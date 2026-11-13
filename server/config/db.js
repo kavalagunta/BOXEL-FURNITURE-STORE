@@ -7,6 +7,7 @@ export const pool = mysql.createPool({
   user: env.db.user,
   password: env.db.password,
   database: env.db.database,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
   waitForConnections: true,
   connectionLimit: 10,
   charset: 'utf8mb4_unicode_ci',
@@ -54,3 +55,5 @@ export async function checkDatabase() {
   const [rows] = await pool.query('SELECT VERSION() AS version');
   return rows[0].version;
 }
+
+
