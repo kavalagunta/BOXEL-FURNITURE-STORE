@@ -251,8 +251,6 @@ export default function AdminLayout({ children }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
-  const pathnameRef = useRef(pathname);
-  useEffect(() => { pathnameRef.current = pathname; }, [pathname]);
 
   useEffect(() => { soundMutedRef.current = soundMuted; }, [soundMuted]);
   useEffect(() => { setMobileNav(false); }, [pathname]);
@@ -262,7 +260,7 @@ export default function AdminLayout({ children }) {
     let source;
     const announceOrder = (order) => {
       const id = String(order.notificationId);
-      if (knownOrderNotifications.current.has(id)) return;
+      if (!id || id === 'undefined' || knownOrderNotifications.current.has(id)) return;
       knownOrderNotifications.current.add(id);
       toast.success(`New order #${order.orderNumber} received.`, {
         action: { label: 'View order', onClick: () => navigate(`/admin/orders/${order.orderId}`) },
@@ -270,6 +268,23 @@ export default function AdminLayout({ children }) {
       });
       if (!soundMutedRef.current) playOrderAlert();
       window.dispatchEvent(new CustomEvent('admin:new-order', { detail: order }));
+      setNotes((current) => {
+        const orders = Array.isArray(current.orders) ? current.orders : [];
+        if (orders.some((item) => String(item.notificationId) === id)) return current;
+        const unreadOrderCount = current.unreadOrderCount + (order.readAt ? 0 : 1);
+        const otherItems = current.items.filter((item) => item.key !== 'orders');
+        const items = unreadOrderCount > 0
+          ? [...otherItems, { key: 'orders', count: unreadOrderCount, label: 'unread new orders', link: '/admin/orders?status=pending' }]
+          : otherItems;
+        return {
+          ...current,
+          orders: [order, ...orders].slice(0, 20),
+          unreadOrderCount,
+          pendingOrderCount: current.pendingOrderCount + 1,
+          items,
+          total: items.reduce((sum, item) => sum + item.count, 0),
+        };
+      });
     };
     const acceptSnapshot = (next) => {
       const orders = Array.isArray(next.orders) ? next.orders : [];
@@ -296,26 +311,31 @@ export default function AdminLayout({ children }) {
       }
     };
     let timer;
+    const schedulePolling = (interval) => {
+      window.clearInterval(timer);
+      timer = window.setInterval(() => {
+        if (!document.hidden) refreshNotifications();
+      }, interval);
+    };
     const startLiveFeed = async () => {
       await refreshNotifications();
       if (!active) return;
       source = new EventSource(`${API_BASE}/api/admin/events/orders`, { withCredentials: true });
+      schedulePolling(2000);
       source.addEventListener('new-order', (event) => {
         try {
           const order = JSON.parse(event.data);
           announceOrder(order);
           refreshNotifications();
-          if (pathnameRef.current.startsWith('/admin/orders')) {
-            post('/admin/notifications/orders/read', {}).then(refreshNotifications).catch(() => {});
-          }
         } catch {
           // Ignore malformed events; the persisted snapshot below will recover them.
         }
       });
-      source.onopen = refreshNotifications;
-      timer = window.setInterval(() => {
-        if (!document.hidden) refreshNotifications();
-      }, 30000);
+      source.onopen = () => {
+        schedulePolling(30000);
+        refreshNotifications();
+      };
+      source.onerror = () => schedulePolling(2000);
     };
     startLiveFeed();
     const onFocus = () => refreshNotifications();

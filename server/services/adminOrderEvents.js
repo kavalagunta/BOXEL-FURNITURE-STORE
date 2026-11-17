@@ -65,7 +65,9 @@ export async function openOrderEventStream(req, res) {
     res.end();
   };
 
-  req.on('close', close);
+  // IncomingMessage 'close' fires when the request is complete. Keep the SSE
+  // connection until the response closes or the client disconnects.
+  res.on('close', close);
   heartbeat = setInterval(async () => {
     try {
       const session = await new Promise((resolve, reject) => {
@@ -130,7 +132,7 @@ export async function openCustomerOrderEventStream(req, res) {
     if (!clients.size) customerConnections.delete(orderId);
     res.end();
   };
-  req.on('close', close);
+  res.on('close', close);
   heartbeat = setInterval(async () => {
     try {
       const session = await new Promise((resolve, reject) => {
