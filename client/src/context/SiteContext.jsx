@@ -3,6 +3,8 @@ import { get } from '../services/api.js';
 import { applyTypography, readTypography } from '../utils/typography.js';
 
 const SiteContext = createContext(null);
+const OFFICIAL_EMAIL = 'openbox@boxel.in';
+const OFFICIAL_INSTAGRAM = 'https://www.instagram.com/boxelfurnsys/?hl=en';
 
 const FALLBACK = {
   settings: {
@@ -10,9 +12,10 @@ const FALLBACK = {
     business_tagline: 'Smart. Safe. Simple.',
     business_phone: '+918310018733',
     business_whatsapp: '+918310018733',
+    business_email: OFFICIAL_EMAIL,
     logo_url: '/images/boxel-logo-trimmed.png',
   },
-  social: [],
+  social: [{ platform: 'instagram', url: OFFICIAL_INSTAGRAM }],
   hero: null,
   promos: [],
   paymentMethods: [],
@@ -24,7 +27,14 @@ export function SiteProvider({ children }) {
 
   const load = useCallback(async () => {
     try {
-      setSite(await get('/site'));
+      const data = await get('/site');
+      const social = (data.social || []).filter((link) => link.platform !== 'instagram');
+      social.push({ platform: 'instagram', url: OFFICIAL_INSTAGRAM });
+      setSite({
+        ...data,
+        settings: { ...data.settings, business_email: OFFICIAL_EMAIL },
+        social,
+      });
       setError(null);
     } catch (err) {
       setError(err);

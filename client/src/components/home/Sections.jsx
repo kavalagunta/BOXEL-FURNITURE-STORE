@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { MapPin, Navigation, Phone, ShoppingBag, Truck, Video } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Navigation, Phone, ShoppingBag, Truck, Video } from 'lucide-react';
 import Reveal from '../ui/Reveal.jsx';
 import SocialIcon, { SOCIAL_LABELS } from '../ui/SocialIcon.jsx';
 import { useSite } from '../../context/SiteContext.jsx';
@@ -30,11 +30,39 @@ const ANATOMY = [
   { x: 24, y: 46, title: 'All-metal, powder-coated', body: 'Built in metal with a durable powder-coat finish, delivered fully assembled.' },
 ];
 
+const SMALL_USES = ['Compact and space-saving', 'Wall-mounted', 'Top-opening parcel lid', 'Gravity-assisted transfer'];
+const SMALL_ANATOMY = [
+  { x: 52, y: 14, title: 'Smart top-loading design', body: 'Lift the lid and the integrated welded tray lies flat so a courier can place a parcel inside.' },
+  { x: 61, y: 34, title: 'Gravity-assisted parcel transfer', body: 'Close the lid and the tray tips down, guiding the parcel into the secure storage vault.' },
+  { x: 84, y: 54, title: '4-wheel combination lock', body: 'The black front lock lets you collect deliveries securely without carrying a key.' },
+  { x: 56, y: 65, title: 'Space-saving wall mount', body: 'At 400 × 300 × 600 mm, it fits beside an entrance. Mounting screws are fitted from inside the vault.' },
+  { x: 27, y: 46, title: 'Flat-pack and premium finish', body: 'Ships as about 18 screw-fastened components for easier assembly and panel replacement. Made from 1.0 mm sheet steel (CAD estimate) with a RAL 7035 light-grey powder coat.' },
+];
+
 export function ProductIntro({ product }) {
   const { s } = useSite();
   const ref = useRef(null);
   const [active, setActive] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(0);
+  const isSmall = selectedProduct === 1;
   const slug = product?.slug || 'parcel-drop-box';
+  const features = isSmall ? SMALL_ANATOMY : ANATOMY;
+  const uses = isSmall ? SMALL_USES : USES;
+  const imageSrc = isSmall ? '/images/small-parcel-drop-box-open.png' : '/images/parcel-drop-box-open.jpeg';
+  const imageAlt = isSmall
+    ? 'The Boxel Small Parcel Drop Box with its top lid and front collection door open'
+    : 'The Parcel Drop Box with its front door open, showing the drop chute above and the storage space below';
+  const introHeading = isSmall
+    ? 'Enjoy safe and hassle-free parcel deliveries with the Boxel Small Parcel Drop Box.'
+    : s.home_intro_heading || 'Meet the boxel Parcel Drop Box';
+  const introBody = isSmall
+    ? 'Specially designed for apartments and modern homes, this compact parcel storage solution allows delivery personnel to deposit parcels securely even when you are away.'
+    : s.home_intro_body || 'Parcels, groceries, laundry and returns arrive when you are out. The Parcel Drop Box receives them safely and holds them until you are back.';
+  const productSlug = isSmall ? 'secure-post-box-slim' : slug;
+  const selectProduct = (index) => {
+    setSelectedProduct(index);
+    setActive(null);
+  };
 
   return (
     <section ref={ref} className="relative overflow-hidden bg-charcoal py-20 text-white sm:py-28 lg:py-36" aria-labelledby="intro-title">
@@ -42,19 +70,20 @@ export function ProductIntro({ product }) {
       <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 size-[42rem] rounded-full bg-[radial-gradient(circle,rgb(241_126_0/0.16),transparent_62%)]" />
       <div className="shell relative grid items-center gap-14 lg:grid-cols-12 lg:gap-16">
         <div className="relative lg:col-span-7">
-          <div className="relative aspect-[1234/1274] overflow-hidden rounded-md bg-[linear-gradient(180deg,#d3d3d5,#f1f1f3)] shadow-[0_40px_80px_-30px_rgb(0_0_0/0.7)]">
+          <div className={`relative overflow-hidden rounded-md bg-[linear-gradient(180deg,#d3d3d5,#f1f1f3)] shadow-[0_40px_80px_-30px_rgb(0_0_0/0.7)] ${isSmall ? 'aspect-[904/781]' : 'aspect-[1234/1274]'}`}>
             {/* No transforms here: the numbered markers stay pixel-sharp. */}
             <div className="absolute inset-0">
               <img
-                src="/images/parcel-drop-box-open.jpeg"
-                alt="The Parcel Drop Box with its front door open, showing the drop chute above and the storage space below"
-                width="1234"
-                height="1274"
+                key={imageSrc}
+                src={imageSrc}
+                alt={imageAlt}
+                width={isSmall ? 904 : 1234}
+                height={isSmall ? 781 : 1274}
                 loading="lazy"
                 decoding="async"
                 className="absolute inset-0 size-full object-cover"
               />
-              {ANATOMY.map((p, i) => (
+              {features.map((p, i) => (
                 <button
                   key={p.title}
                   type="button"
@@ -64,8 +93,9 @@ export function ProductIntro({ product }) {
                   onMouseLeave={() => setActive(null)}
                   onFocus={() => setActive(i)}
                   onBlur={() => setActive(null)}
+                  onClick={() => setActive(i)}
                   aria-label={`${i + 1}. ${p.title}: ${p.body}`}
-                  aria-describedby={`anatomy-${i}`}
+                  aria-describedby={`anatomy-${selectedProduct}-${i}`}
                 >
                   <span className="hotspot-ring absolute inset-0 rounded-full bg-signal" style={{ animationDelay: `${0.4 + i * 0.25}s` }} aria-hidden />
                   <span
@@ -78,24 +108,40 @@ export function ProductIntro({ product }) {
                 </button>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={() => selectProduct((selectedProduct + 1) % 2)}
+              aria-label={`Show ${isSmall ? 'Parcel Drop Box' : 'Small Parcel Drop Box'}`}
+              className="absolute left-3 top-1/2 z-20 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white shadow-lg transition hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:left-5 sm:size-12"
+            >
+              <ChevronLeft className="size-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => selectProduct((selectedProduct + 1) % 2)}
+              aria-label={`Show ${isSmall ? 'Parcel Drop Box' : 'Small Parcel Drop Box'}`}
+              className="absolute right-3 top-1/2 z-20 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white shadow-lg transition hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:right-5 sm:size-12"
+            >
+              <ChevronRight className="size-5" aria-hidden="true" />
+            </button>
           </div>
           <Reveal delay={0.2} className="relative mt-4 max-w-[15rem] rounded-md bg-white p-5 text-ink shadow-[var(--shadow-float)] sm:absolute sm:-bottom-7 sm:right-8 sm:mt-0 lg:-right-10">
-            <p className="text-3xl font-light tracking-tight">3–4 homes</p>
-            <p className="mt-1 text-sm text-graphite">can share one Parcel Drop Box.</p>
+            <p className="text-3xl font-light tracking-tight">{isSmall ? '400 × 300 × 600 mm' : '3–4 homes'}</p>
+            <p className="mt-1 text-sm text-graphite">{isSmall ? 'compact wall-mounted parcel storage.' : 'can share one Parcel Drop Box.'}</p>
           </Reveal>
         </div>
 
         <div className="lg:col-span-5">
           <Reveal>
             <h2 id="intro-title" className="text-headline font-light">
-              {s.home_intro_heading || 'Meet the boxel Parcel Drop Box'}
+              {introHeading}
             </h2>
             <p className="mt-6 text-lead text-white/65">
-              {s.home_intro_body ||
-                'Parcels, groceries, laundry and returns arrive when you are out. The Parcel Drop Box receives them safely and holds them until you are back.'}
+              {introBody}
             </p>
+            {isSmall && <p className="mt-4 text-white/65">Make every parcel delivery convenient, secure and worry-free with Boxel.</p>}
             <ul className="mt-7 flex flex-wrap gap-2" aria-label="What it receives">
-              {USES.map((u) => (
+              {uses.map((u) => (
                 <li key={u} className="rounded-full border border-white/15 px-3.5 py-1.5 text-sm text-white/85">
                   {u}
                 </li>
@@ -104,10 +150,10 @@ export function ProductIntro({ product }) {
           </Reveal>
           <Reveal delay={0.12}>
             <ol className="mt-10 border-t border-white/12">
-              {ANATOMY.map((p, i) => (
+              {features.map((p, i) => (
                 <li
                   key={p.title}
-                  id={`anatomy-${i}`}
+                  id={`anatomy-${selectedProduct}-${i}`}
                   onMouseEnter={() => setActive(i)}
                   onMouseLeave={() => setActive(null)}
                   className={`flex gap-4 border-b border-white/12 py-4 transition-colors duration-300 ${active === i ? 'text-white' : 'text-white/80'}`}
@@ -128,10 +174,12 @@ export function ProductIntro({ product }) {
               ))}
             </ol>
             <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
-              <Link to={`/products/${slug}`} className="btn btn-signal">
-                View the Parcel Drop Box
+              <Link to={`/products/${productSlug}`} className="btn btn-signal">
+                {isSmall ? 'View the Small Parcel Drop Box' : 'View the Parcel Drop Box'}
               </Link>
-              <span className="text-sm text-white/55">{ATTRIBUTES.slice(3).join(' and ').toLowerCase().replace(/^./, (c) => c.toUpperCase())}.</span>
+              <span className="text-sm text-white/55">
+                {isSmall ? 'Compact 400 × 300 × 600 mm wall-mounted design.' : `${ATTRIBUTES.slice(3).join(' and ').toLowerCase().replace(/^./, (c) => c.toUpperCase())}.`}
+              </span>
             </div>
           </Reveal>
         </div>
