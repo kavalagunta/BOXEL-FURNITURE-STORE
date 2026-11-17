@@ -25,6 +25,7 @@ export default function HeroVideo({
   poster = '/images/parcel-drop-box-front.jpeg',
   alt = 'boxel Parcel Drop Box showcase',
   className = '',
+  fit = 'cover',
   loop = true,
   onEnded,
 }) {
@@ -34,6 +35,7 @@ export default function HeroVideo({
   const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const reduceMotion = useReducedMotion();
+  const fitClass = fit === 'contain' ? 'object-contain' : 'object-cover';
   const posterSource = poster?.includes('/video/upload/') ? poster.replace('/video/upload/', '/video/upload/so_0,f_jpg,q_auto/') : poster;
 
   // Create Blob URL for stronger URL protection (hides static URL from DOM inspection)
@@ -140,7 +142,7 @@ export default function HeroVideo({
         <img
           src={posterSource}
           alt={alt}
-          className="size-full object-cover rounded-2xl"
+          className={`size-full ${fitClass} rounded-2xl`}
           draggable="false"
           onContextMenu={preventContext}
         />
@@ -165,7 +167,7 @@ export default function HeroVideo({
             onError={() => setHasError(true)}
             onLoadedData={() => setIsLoaded(true)}
             onEnded={onEnded}
-            className="size-full object-cover object-center rounded-2xl transition-opacity duration-700 pointer-events-none"
+            className={`size-full ${fitClass} object-center rounded-2xl transition-opacity duration-700 pointer-events-none`}
             style={{
               WebkitTouchCallout: 'none',
               WebkitUserSelect: 'none',
@@ -174,7 +176,7 @@ export default function HeroVideo({
           >
             {webmSrc && <source src={webmSrc} type="video/webm" />}
             <source src={blobUrl || videoSrc} type="video/mp4" />
-            <img src={poster} alt={alt} className="size-full object-cover rounded-2xl" />
+            <img src={poster} alt={alt} className={`size-full ${fitClass} rounded-2xl`} />
           </video>
 
           {/* Transparent Overlay Shield: intercepts mouse and touch events directly above video */}

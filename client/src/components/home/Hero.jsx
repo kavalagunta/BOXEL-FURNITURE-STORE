@@ -33,8 +33,8 @@ export default function Hero({ banner }) {
   const section = useRef(null);
   const [activeVideo, setActiveVideo] = useState(0);
   const videos = [
-    { src: b.video_url || '/videos/big-parcel-box-no-text.mp4', alt: b.image_alt || 'boxel Parcel Drop Box showcase' },
-    { src: '/videos/small-parcel-box-no-text.mp4', alt: 'boxel Small Parcel Box showcase' },
+    { src: '/videos/big-parcel.mp4', alt: b.image_alt || 'boxel Parcel Drop Box showcase' },
+    { src: '/videos/small-parcel.mp4', alt: 'boxel Small Parcel Box showcase' },
   ];
 
   // Scroll-linked depth: the product drifts up slower than the page, the studio panel slower still.
@@ -61,78 +61,79 @@ export default function Hero({ banner }) {
 
   return (
     <section ref={section} className="relative isolate overflow-hidden" aria-labelledby="hero-title">
-      <div className="lg:grid lg:min-h-[min(calc(100svh-4.5rem),56rem)] lg:grid-cols-12">
-        {/* Copy */}
-        <div className="shell relative z-10 flex flex-col justify-center pb-12 pt-10 sm:pt-14 lg:col-span-6 lg:max-w-none lg:py-24 lg:pl-[max(2.5rem,calc((100vw-1320px)/2+2.5rem))] lg:pr-10">
-          <h1 id="hero-title" className="text-display-xl font-light text-ink">
+      {/* Copy stays above the product video at every screen size. */}
+      <div className="shell relative z-10 pb-5 pt-7 sm:pb-7 sm:pt-9 lg:pb-8 lg:pt-10">
+        <div className="mx-auto max-w-[56rem] text-center">
+          <h1 id="hero-title" className="text-[clamp(1.75rem,3.5vw,3.5rem)] leading-[0.98] tracking-[-0.045em] font-light text-ink">
             {lines(b.headline).map((line, i) => (
-              <span key={i} className="block overflow-hidden pb-[0.06em]">
+              <span key={i} className="block overflow-hidden pb-[0.06em] text-center">
                 <motion.span className="block" initial={{ y: '105%' }} animate={{ y: 0 }} transition={{ duration: 1, delay: 0.55 + i * 0.12, ease: EASE }}>
                   {line}
                 </motion.span>
               </span>
             ))}
           </h1>
-          <motion.p className="mt-6 max-w-[34ch] text-lead text-graphite" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.85, ease: EASE }}>
+          <motion.p className="mx-auto mt-4 max-w-[48ch] text-lead text-graphite" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.85, ease: EASE }}>
             {b.subheadline}
           </motion.p>
-          <motion.div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1, ease: EASE }}>
+          <motion.div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1, ease: EASE }}>
             {b.cta_text && b.cta_url && <SmartLink to={b.cta_url} className="btn btn-primary group">{b.cta_text}</SmartLink>}
             {b.secondary_cta_text && b.secondary_cta_url && <SmartLink to={b.secondary_cta_url} className="link py-2 text-[0.9375rem] font-medium">{b.secondary_cta_text}</SmartLink>}
           </motion.div>
         </div>
+      </div>
 
-        {/* Studio stage */}
-        <div className="relative lg:col-span-6" onPointerMove={onMove} onPointerLeave={onLeave}>
+      {/* Studio stage: contain preserves the complete video frame instead of cropping it. */}
+      <div className="relative" onPointerMove={onMove} onPointerLeave={onLeave}>
+        <motion.div
+          aria-hidden
+          style={{ y: panelY }}
+          className="absolute inset-0 -bottom-16 bg-[linear-gradient(180deg,var(--color-studio-top)_0%,#c9c8ca_55%,var(--color-studio-floor)_100%)]"
+          initial={{ clipPath: 'inset(0 0 0 100%)' }}
+          animate={{ clipPath: 'inset(0 0 0 0%)' }}
+          transition={{ duration: 1.1, ease: EASE }}
+        />
+        <div className="relative mx-auto flex w-[98vw] justify-center py-2 sm:py-4 lg:py-5" style={{ perspective: '1600px' }}>
           <motion.div
-            aria-hidden
-            style={{ y: panelY }}
-            className="absolute inset-0 -bottom-16 bg-[linear-gradient(180deg,var(--color-studio-top)_0%,#c9c8ca_55%,var(--color-studio-floor)_100%)]"
-            initial={{ clipPath: 'inset(0 0 0 100%)' }}
-            animate={{ clipPath: 'inset(0 0 0 0%)' }}
-            transition={{ duration: 1.1, ease: EASE }}
-          />
-          <div className="relative flex aspect-[4/5] items-center justify-center sm:aspect-[4/3] lg:aspect-auto lg:h-full p-4 sm:p-6 lg:p-8" style={{ perspective: '1600px' }}>
-            <motion.div
-              style={{ y: productY, scale: productScale, rotateX: rotX, rotateY: rotY, transformStyle: 'preserve-3d' }}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, delay: 0.35, ease: EASE }}
-              className="relative h-full w-full flex items-center justify-center"
-            >
-              <HeroVideo
-                key={videos[activeVideo].src}
-                videoSrc={videos[activeVideo].src}
-                webmSrc=""
-                poster={b.desktop_image_url}
-                alt={videos[activeVideo].alt}
-                className="w-full h-full max-h-[560px] object-cover"
-                loop={false}
-                onEnded={() => setActiveVideo((current) => (current + 1) % videos.length)}
-              />
-              <div className="pointer-events-none absolute inset-y-0 left-2 right-2 z-20 flex items-center justify-between sm:left-4 sm:right-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveVideo((current) => (current + videos.length - 1) % videos.length)}
-                  aria-label="Show previous product video"
-                  className="pointer-events-auto grid size-10 place-items-center rounded-full border border-white/50 bg-black/35 text-white shadow-lg backdrop-blur-md transition duration-200 hover:scale-105 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:size-12"
-                >
-                  <ChevronLeft className="size-5" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveVideo((current) => (current + 1) % videos.length)}
-                  aria-label="Show next product video"
-                  className="pointer-events-auto grid size-10 place-items-center rounded-full border border-white/50 bg-black/35 text-white shadow-lg backdrop-blur-md transition duration-200 hover:scale-105 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:size-12"
-                >
-                  <ChevronRight className="size-5" aria-hidden="true" />
-                </button>
-              </div>
-            </motion.div>
-
-          </div>
+            style={{ y: productY, scale: productScale, rotateX: rotX, rotateY: rotY, transformStyle: 'preserve-3d' }}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.35, ease: EASE }}
+            className="relative aspect-video w-full max-w-none"
+          >
+            <HeroVideo
+              key={videos[activeVideo].src}
+              videoSrc={videos[activeVideo].src}
+              webmSrc=""
+              poster={b.desktop_image_url}
+              alt={videos[activeVideo].alt}
+              className="size-full"
+              fit="contain"
+              loop={false}
+              onEnded={() => setActiveVideo((current) => (current + 1) % videos.length)}
+            />
+            <div className="pointer-events-none absolute inset-y-0 left-2 right-2 z-20 flex items-center justify-between sm:left-4 sm:right-4">
+              <button
+                type="button"
+                onClick={() => setActiveVideo((current) => (current + videos.length - 1) % videos.length)}
+                aria-label="Show previous product video"
+                className="pointer-events-auto grid size-10 place-items-center rounded-full border border-white/50 bg-black/35 text-white shadow-lg backdrop-blur-md transition duration-200 hover:scale-105 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:size-12"
+              >
+                <ChevronLeft className="size-5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveVideo((current) => (current + 1) % videos.length)}
+                aria-label="Show next product video"
+                className="pointer-events-auto grid size-10 place-items-center rounded-full border border-white/50 bg-black/35 text-white shadow-lg backdrop-blur-md transition duration-200 hover:scale-105 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:size-12"
+              >
+                <ChevronRight className="size-5" aria-hidden="true" />
+              </button>
+            </div>
+          </motion.div>
         </div>
       </div>
+
     </section>
   );
 }
